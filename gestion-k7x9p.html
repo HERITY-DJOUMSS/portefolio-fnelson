@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>[FN_SEC] — Interface Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--bg:#050908;--bg2:#0a100c;--card:#0d1a10;--green:#00ff41;--green2:#00cc33;--green3:#009922;--cyan:#00ffff;--red:#ff3b3b;--border:rgba(0,255,65,.18);--border2:rgba(0,255,65,.35);--text:#b0ffbe;--text-dim:#4a8a5a;--font:'Share Tech Mono','Courier New',monospace;--title:'Orbitron',monospace;--t:.3s ease}
+*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+a{text-decoration:none;color:inherit}
+input,textarea,select{background:rgba(0,0,0,.5);border:1px solid var(--border);color:var(--green);font-family:var(--font);font-size:.78rem;padding:.6rem .9rem;outline:none;width:100%;transition:border-color var(--t)}
+input:focus,textarea:focus,select:focus{border-color:var(--green);box-shadow:0 0 10px rgba(0,255,65,.15)}
+input::placeholder,textarea::placeholder{color:var(--text-dim);opacity:.5}
+textarea{resize:vertical;min-height:90px}
+label{font-size:.65rem;color:var(--text-dim);letter-spacing:2px;display:block;margin-bottom:.35rem}
+.fg{margin-bottom:1rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+button{cursor:pointer;font-family:var(--font)}
+.btn{border:1px solid var(--green);color:var(--green);background:transparent;font-size:.75rem;padding:.6rem 1.2rem;letter-spacing:2px;transition:all var(--t);display:inline-flex;align-items:center;gap:.4rem}
+.btn:hover{background:rgba(0,255,65,.1);box-shadow:0 0 15px rgba(0,255,65,.2)}
+.btn-red{border-color:var(--red);color:var(--red)}
+.btn-red:hover{background:rgba(255,59,59,.1)}
+.btn-cyan{border-color:var(--cyan);color:var(--cyan)}
+.btn-cyan:hover{background:rgba(0,255,255,.1)}
+.btn-sm{padding:.35rem .8rem;font-size:.68rem}
+.badge{font-size:.6rem;border:1px solid;padding:2px 7px;letter-spacing:1px}
+.badge-g{border-color:var(--green2);color:var(--green2)}
+.badge-c{border-color:var(--cyan);color:var(--cyan)}
+.badge-r{border-color:var(--red);color:var(--red)}
+hr{border:none;border-top:1px solid var(--border);margin:1.5rem 0}
+.msg{padding:.7rem 1rem;font-size:.75rem;margin-top:.8rem;display:none;align-items:center;gap:.5rem}
+.msg-ok{border:1px solid var(--green2);color:var(--green);background:rgba(0,255,65,.05)}
+.msg-err{border:1px solid var(--red);color:var(--red);background:rgba(255,59,59,.05)}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:9999}
+.login-box{border:1px solid var(--border2);padding:3rem;width:380px;text-align:center;box-shadow:0 0 40px rgba(0,255,65,.1)}
+.login-logo{font-family:var(--title);font-size:1.2rem;color:var(--green);letter-spacing:3px;margin-bottom:.5rem;text-shadow:0 0 20px rgba(0,255,65,.4)}
+.login-sub{font-size:.68rem;color:var(--text-dim);letter-spacing:2px;margin-bottom:2rem}
+.login-box input{text-align:center;margin-bottom:1rem;letter-spacing:4px}
+.login-err{font-size:.72rem;color:var(--red);margin-top:.5rem;display:none;align-items:center;justify-content:center;gap:.4rem}
+.login-attempts{font-size:.68rem;color:var(--red);margin-top:.5rem;display:none}
+.login-locked{background:rgba(255,59,59,.06);border:1px solid var(--red);padding:1rem;margin-top:1rem;display:none;flex-direction:column;gap:.5rem}
+.locked-title{font-size:.75rem;color:var(--red);letter-spacing:2px}
+.locked-timer{font-family:var(--title);font-size:1.6rem;color:var(--red);text-shadow:0 0 15px rgba(255,59,59,.5);letter-spacing:3px}
+.locked-sub{font-size:.62rem;color:var(--text-dim)}
+.attempts-bar{display:flex;gap:.4rem;justify-content:center;margin-bottom:1rem}
+.attempt-dot{width:10px;height:10px;border:1px solid var(--border2);border-radius:0}
+.attempt-dot.used{background:var(--red);border-color:var(--red);box-shadow:0 0 6px var(--red)}
+
+/* LAYOUT */
+#dashboard{display:none;min-height:100vh}
+.admin-header{height:60px;background:rgba(5,9,8,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:100}
+.admin-header-logo{font-family:var(--title);font-size:.9rem;color:var(--green);letter-spacing:2px}
+.admin-header-right{display:flex;align-items:center;gap:1rem;font-size:.72rem}
+.header-link{color:var(--cyan);display:flex;align-items:center;gap:.3rem;transition:color var(--t)}
+.header-link:hover{color:var(--green)}
+.layout{display:flex;min-height:calc(100vh - 60px)}
+
+/* SIDEBAR */
+.admin-sidebar{width:220px;background:rgba(0,0,0,.4);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column}
+.admin-nav{display:flex;flex-direction:column;padding:1rem 0;flex:1}
+.admin-link{display:flex;align-items:center;gap:.8rem;padding:.8rem 1.2rem;font-size:.75rem;color:var(--text-dim);letter-spacing:1px;border-left:3px solid transparent;transition:all var(--t)}
+.admin-link i{width:16px;color:var(--green3);font-size:.85rem}
+.admin-link:hover,.admin-link.active{color:var(--green);border-left-color:var(--green);background:rgba(0,255,65,.05)}
+.admin-link:hover i,.admin-link.active i{color:var(--green)}
+
+/* MAIN AREA */
+.admin-main{flex:1;padding:2rem;overflow-y:auto;max-height:calc(100vh - 60px)}
+.admin-section{display:none}.admin-section.active{display:block}
+.section-title{font-family:var(--title);font-size:1rem;color:var(--green);letter-spacing:3px;margin-bottom:.5rem;padding-bottom:.8rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.7rem}
+.section-title i{color:var(--cyan);font-size:.9rem}
+.section-sub{font-size:.7rem;color:var(--text-dim);margin-bottom:1.5rem;letter-spacing:1px}
+.card{background:var(--card);border:1px solid var(--border);padding:1.5rem;margin-bottom:1rem}
+.card-title{font-size:.8rem;color:var(--cyan);letter-spacing:2px;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card-title i{color:var(--green3)}
+
+/* PROJECTS LIST */
+.projects-list{display:flex;flex-direction:column;gap:.8rem;margin-bottom:1.5rem}
+.proj-item{background:var(--card);border:1px solid var(--border);padding:1rem 1.2rem;display:flex;align-items:center;gap:1rem;transition:border-color var(--t)}
+.proj-item:hover{border-color:var(--green2)}
+.proj-item-cover{width:50px;height:50px;background:rgba(0,255,65,.08);border:1px solid var(--border);overflow:hidden;flex-shrink:0}
+.proj-item-cover img{width:100%;height:100%;object-fit:cover}
+.proj-item-info{flex:1}
+.proj-item-name{font-size:.82rem;color:var(--green);margin-bottom:.25rem}
+.proj-item-tags{font-size:.65rem;color:var(--text-dim)}
+.proj-item-actions{display:flex;gap:.5rem;flex-shrink:0}
+.no-proj{font-size:.78rem;color:var(--text-dim);text-align:center;padding:2rem;border:1px dashed var(--border)}
+
+/* STEP EDITOR */
+.steps-list{display:flex;flex-direction:column;gap:.8rem;margin:1rem 0}
+.step-edit-item{border:1px solid var(--border);padding:1rem;background:rgba(0,0,0,.3)}
+.step-edit-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.step-num{font-size:.7rem;color:var(--cyan);letter-spacing:2px}
+.step-edit-preview{width:100%;height:120px;object-fit:cover;display:block;border:1px solid var(--border);margin-bottom:.5rem;background:var(--card)}
+
+/* COMPETENCES */
+.cat-block{border:1px solid var(--border);padding:1rem;margin-bottom:1rem;background:rgba(0,0,0,.2)}
+.cat-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem}
+.cat-name{font-size:.8rem;color:var(--cyan);letter-spacing:1px}
+.skills-edit-list{display:flex;flex-direction:column;gap:.5rem}
+.skill-edit-row{display:grid;grid-template-columns:1fr auto auto;gap:.5rem;align-items:center}
+.skill-edit-row input[type=range]{background:transparent;accent-color:var(--green);height:4px;padding:0}
+.skill-level-show{font-size:.7rem;color:var(--cyan);width:35px;text-align:right}
+
+/* IMAGE UPLOADER */
+.img-uploader{border:2px dashed var(--border2);padding:2rem;text-align:center;cursor:pointer;transition:all var(--t)}
+.img-uploader:hover{border-color:var(--green);background:rgba(0,255,65,.03)}
+.img-uploader i{font-size:2rem;color:var(--green3);display:block;margin-bottom:.5rem}
+.img-uploader span{font-size:.7rem;color:var(--text-dim)}
+.img-preview{width:100%;max-height:200px;object-fit:cover;display:none;border:1px solid var(--border);margin-top:.8rem}
+
+/* SETTINGS */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+.n8n-info{background:rgba(0,255,65,.04);border:1px solid var(--border);padding:1rem;font-size:.72rem;color:var(--text-dim);line-height:1.9;margin-top:1rem}
+.n8n-info strong{color:var(--cyan)}
+.n8n-step{margin-bottom:.5rem;padding-left:.8rem;border-left:2px solid var(--green3)}
+
+/* TABS in apropos */
+.apropos-photo-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.8rem;margin:1rem 0}
+.ap-photo-item{border:1px solid var(--border);overflow:hidden;position:relative}
+.ap-photo-item img{width:100%;height:110px;object-fit:cover;display:block}
+.ap-photo-caption{padding:.4rem .5rem;font-size:.62rem;color:var(--text-dim);background:rgba(0,0,0,.4)}
+.ap-photo-del{position:absolute;top:4px;right:4px;background:rgba(255,59,59,.8);border:none;color:#fff;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.7rem}
+
+/* MODAL for edit */
+.edit-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity var(--t)}
+.edit-modal-overlay.open{opacity:1;pointer-events:all}
+.edit-modal{background:#060d07;border:1px solid var(--border2);width:100%;max-width:750px;margin:auto;position:relative;max-height:90vh;overflow-y:auto}
+.edit-modal-header{padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#060d07;z-index:10}
+.edit-modal-title{font-family:var(--title);font-size:.9rem;color:var(--green);letter-spacing:2px}
+.edit-modal-close{background:transparent;border:1px solid var(--border);color:var(--text-dim);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all var(--t)}
+.edit-modal-close:hover{border-color:var(--red);color:var(--red)}
+.edit-modal-body{padding:1.5rem}
+.edit-modal-footer{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.8rem;position:sticky;bottom:0;background:#060d07}
+
+@media(max-width:700px){.admin-sidebar{display:none}.settings-grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">[FN_SEC]</div>
+    <div class="login-sub">// INTERFACE ADMIN — ACCÈS RESTREINT</div>
+
+    <!-- 3 points tentatives -->
+    <div class="attempts-bar" id="attemptsDots">
+      <div class="attempt-dot" id="dot1"></div>
+      <div class="attempt-dot" id="dot2"></div>
+      <div class="attempt-dot" id="dot3"></div>
+    </div>
+
+    <input type="password" id="loginPwd" placeholder="••••••••" autocomplete="current-password"/>
+    <button class="btn" id="loginBtn" onclick="doLogin()" style="width:100%;justify-content:center">
+      <i class="fas fa-terminal"></i> CONNEXION
+    </button>
+
+    <div class="login-err" id="loginErr">
+      <i class="fas fa-exclamation-triangle"></i>
+      <span id="loginErrTxt">Mot de passe incorrect.</span>
+    </div>
+
+    <!-- Écran blocage -->
+    <div class="login-locked" id="loginLocked">
+      <div class="locked-title"><i class="fas fa-lock"></i> ACCÈS BLOQUÉ</div>
+      <div class="locked-timer" id="lockTimer">5:00</div>
+      <div class="locked-sub">Trop de tentatives échouées.<br>Réessaie dans le temps indiqué.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header class="admin-header">
+    <div class="admin-header-logo">[FN_SEC] // ADMIN</div>
+    <div class="admin-header-right">
+      <button class="btn btn-sm btn-cyan" onclick="forceSyncPortfolio()" style="font-size:.68rem"><i class="fas fa-sync-alt"></i> Forcer sync portfolio</button>
+      <a href="index.html" target="_blank" class="header-link"><i class="fas fa-external-link-alt"></i> Voir le portfolio</a>
+      <button class="btn btn-sm" onclick="doLogout()"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <!-- Sidebar Navigation -->
+    <aside class="admin-sidebar">
+      <nav class="admin-nav">
+        <a href="#" class="admin-link active" data-section="dashboard"><i class="fas fa-th-large"></i> Dashboard</a>
+        <a href="#" class="admin-link" data-section="profil"><i class="fas fa-user-circle"></i> Profil & Photo</a>
+        <a href="#" class="admin-link" data-section="apropos"><i class="fas fa-user-shield"></i> À Propos</a>
+        <a href="#" class="admin-link" data-section="competences"><i class="fas fa-code"></i> Compétences</a>
+        <a href="#" class="admin-link" data-section="certifications"><i class="fas fa-certificate"></i> Certifications</a>
+        <a href="#" class="admin-link" data-section="experiences"><i class="fas fa-briefcase"></i> Expérience</a>
+        <a href="#" class="admin-link" data-section="projets"><i class="fas fa-folder-open"></i> Projets</a>
+        <a href="#" class="admin-link" data-section="interets"><i class="fas fa-star"></i> Centres d'intérêt</a>
+        <a href="#" class="admin-link" data-section="settings"><i class="fas fa-cog"></i> Paramètres</a>
+      </nav>
+    </aside>
+
+    <main class="admin-main" id="adminMain">
+
+      <!-- DASHBOARD -->
+      <div class="admin-section active" id="sec-dashboard">
+        <div class="section-title"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="section-sub">Bienvenue dans ton interface admin. Sélectionne une section à modifier.</div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:1rem;margin-top:1rem" id="dashStats"></div>
+        <div class="card" style="margin-top:1.5rem">
+          <div class="card-title"><i class="fas fa-info-circle"></i> Guide rapide</div>
+          <div style="font-size:.75rem;color:var(--text-dim);line-height:2">
+            <div>1. Commence par <strong style="color:var(--green)">Profil & Photo</strong> pour ajouter ta photo et personnaliser le Hero.</div>
+            <div>2. Remplis <strong style="color:var(--green)">À Propos</strong> avec tes textes et photos de parcours.</div>
+            <div>3. Ajuste tes <strong style="color:var(--green)">Compétences</strong> et <strong style="color:var(--green)">Certifications</strong>.</div>
+            <div>4. Ajoute tes <strong style="color:var(--green)">Expériences</strong> et <strong style="color:var(--green)">Projets</strong>.</div>
+            <div>5. Configure le <strong style="color:var(--green)">webhook n8n</strong> dans Paramètres pour recevoir les avis.</div>
+            <div>6. Clique sur <strong style="color:var(--cyan)">"Voir le portfolio"</strong> pour voir le résultat en direct !</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PROFIL -->
+      <div class="admin-section" id="sec-profil">
+        <div class="section-title"><i class="fas fa-user-circle"></i> Profil & Photo</div>
+        <div class="section-sub">Ces informations apparaissent dans la section Hero du portfolio.</div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-camera"></i> Photo de profil</div>
+          <div class="img-uploader" onclick="document.getElementById('photoFileInput').click()">
+            <i class="fas fa-user-secret"></i>
+            <span>Clique pour uploader ta photo (JPG, PNG)</span>
+          </div>
+          <input type="file" id="photoFileInput" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)"/>
+          <img id="photoPreview" class="img-preview"/>
+          <div id="photoSizeInfo" style="font-size:.65rem;color:var(--text-dim);margin-top:.4rem;letter-spacing:1px"></div>
+          <div style="font-size:.65rem;color:var(--text-dim);margin-top:.5rem">// Ou colle une URL directe :</div>
+          <input type="url" id="photoUrl" placeholder="https://exemple.com/ma-photo.jpg" style="margin-top:.4rem"/>
+          <button class="btn btn-sm" style="margin-top:.5rem" onclick="applyPhotoUrl()"><i class="fas fa-link"></i> Utiliser cette URL</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-id-card"></i> Informations Hero</div>
+          <div class="row">
+            <div class="fg"><label>Nom (affiché en grand)</label><input id="pNom" placeholder="DJOUMESSI TATSIFANG"/></div>
+            <div class="fg"><label>Prénom</label><input id="pPrenom" placeholder="Fredy Nelson"/></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label>Titre / Métier</label><input id="pTitre" placeholder="Ingénieur Cybersécurité"/></div>
+            <div class="fg"><label>Localisation</label><input id="pLoc" placeholder="France"/></div>
+          </div>
+          <div class="fg"><label>Accroche (apparaît sous le nom)</label><textarea id="pAccroche" style="min-height:70px"></textarea></div>
+          <button class="btn" onclick="saveProfil()"><i class="fas fa-save"></i> Enregistrer le profil</button>
+          <div class="msg msg-ok" id="profilMsg"><i class="fas fa-check"></i> Profil enregistré !</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-address-card"></i> Informations de contact</div>
+          <div class="row">
+            <div class="fg"><label>Nom complet</label><input id="iNom" placeholder="Fredy Nelson DJOUMESSI"/></div>
+            <div class="fg"><label>Email</label><input id="iEmail" type="email" placeholder="fndjoumessi@gmail.com"/></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label>Téléphone</label><input id="iTel" placeholder="+33 7 58 59 62 75"/></div>
+            <div class="fg"><label>Localisation</label><input id="iLoc" placeholder="France"/></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label>Formation / École</label><input id="iFormation" placeholder="Ton école / diplôme"/></div>
+            <div class="fg"><label>Spécialité</label><input id="iSpecialite" placeholder="Cybersécurité"/></div>
+          </div>
+          <button class="btn" onclick="saveInfos()"><i class="fas fa-save"></i> Enregistrer</button>
+          <div class="msg msg-ok" id="infosMsg"><i class="fas fa-check"></i> Infos enregistrées !</div>
+        </div>
+      </div>
+
+      <!-- À PROPOS -->
+      <div class="admin-section" id="sec-apropos">
+        <div class="section-title"><i class="fas fa-user-shield"></i> À Propos</div>
+        <div class="section-sub">Rédige tes paragraphes et ajoute des photos illustrant ton parcours.</div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-align-left"></i> Paragraphes</div>
+          <div id="paraContainer"></div>
+          <button class="btn btn-sm btn-cyan" onclick="addParagraph()"><i class="fas fa-plus"></i> Ajouter un paragraphe</button>
+          <button class="btn" style="margin-left:.5rem" onclick="saveApropos()"><i class="fas fa-save"></i> Enregistrer</button>
+          <div class="msg msg-ok" id="aproposMsg"><i class="fas fa-check"></i> À Propos enregistré !</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-images"></i> Photos de parcours (avec légende)</div>
+          <div class="fg"><label>URL de l'image</label><input id="apImgUrl" placeholder="https://exemple.com/image.jpg"/></div>
+          <div class="fg"><label>Légende / Description</label><input id="apImgCaption" placeholder="Mon stage chez X — 2024"/></div>
+          <button class="btn btn-sm btn-cyan" onclick="addAproposPhoto()"><i class="fas fa-plus"></i> Ajouter cette photo</button>
+          <div class="apropos-photo-list" id="aproposPhotoList"></div>
+          <button class="btn" onclick="saveApropos()"><i class="fas fa-save"></i> Enregistrer tout</button>
+        </div>
+      </div>
+
+      <!-- COMPÉTENCES -->
+      <div class="admin-section" id="sec-competences">
+        <div class="section-title"><i class="fas fa-code"></i> Compétences</div>
+        <div class="section-sub">Modifie les catégories, les niveaux, ou ajoute des compétences.</div>
+        <div id="competencesEditor"></div>
+        <button class="btn" onclick="saveCompetences()"><i class="fas fa-save"></i> Enregistrer tout</button>
+        <div class="msg msg-ok" id="compMsg"><i class="fas fa-check"></i> Compétences enregistrées !</div>
+      </div>
+
+      <!-- CERTIFICATIONS -->
+      <div class="admin-section" id="sec-certifications">
+        <div class="section-title"><i class="fas fa-certificate"></i> Certifications</div>
+        <div class="section-sub">Ajoute tes certifications, outils maîtrisés et badges.</div>
+        <div class="card">
+          <div id="certifsList"></div>
+          <hr/>
+          <div class="card-title"><i class="fas fa-plus"></i> Ajouter une certification</div>
+          <div class="row">
+            <div class="fg"><label>Nom</label><input id="newCertName" placeholder="OSCP, AWS SAA, n8n Expert..."/></div>
+            <div class="fg"><label>Icône FontAwesome (optionnel)</label><input id="newCertIcon" placeholder="fas fa-certificate"/></div>
+          </div>
+          <button class="btn btn-cyan btn-sm" onclick="addCertif()"><i class="fas fa-plus"></i> Ajouter</button>
+          <button class="btn" style="margin-left:.5rem" onclick="saveCertifs()"><i class="fas fa-save"></i> Enregistrer</button>
+          <div class="msg msg-ok" id="certifMsg"><i class="fas fa-check"></i> Certifications enregistrées !</div>
+        </div>
+      </div>
+
+      <!-- EXPÉRIENCE -->
+      <div class="admin-section" id="sec-experiences">
+        <div class="section-title"><i class="fas fa-briefcase"></i> Expérience</div>
+        <div class="section-sub">Ajoute stages/emplois et ta vie académique.</div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-briefcase"></i> Stages & Emplois</div>
+          <div id="stagesList"></div>
+          <button class="btn btn-cyan btn-sm" onclick="openExpModal('stage')"><i class="fas fa-plus"></i> Ajouter un stage / emploi</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-graduation-cap"></i> Vie Académique</div>
+          <div id="acadList"></div>
+          <button class="btn btn-cyan btn-sm" onclick="openExpModal('academique')"><i class="fas fa-plus"></i> Ajouter une formation</button>
+        </div>
+        <button class="btn" onclick="saveExperiences()"><i class="fas fa-save"></i> Enregistrer tout</button>
+        <div class="msg msg-ok" id="expMsg"><i class="fas fa-check"></i> Expériences enregistrées !</div>
+      </div>
+
+      <!-- PROJETS -->
+      <div class="admin-section" id="sec-projets">
+        <div class="section-title"><i class="fas fa-folder-open"></i> Projets</div>
+        <div class="section-sub">Ajoute et gère tes projets. Chaque projet peut avoir une galerie d'images pas à pas.</div>
+        <button class="btn btn-cyan" onclick="openProjectModal(null)" style="margin-bottom:1.5rem"><i class="fas fa-plus"></i> Nouveau projet</button>
+        <div class="projects-list" id="adminProjectsList">
+          <div class="no-proj"><i class="fas fa-folder-open" style="font-size:1.5rem;display:block;margin-bottom:.5rem;color:var(--green3)"></i>Aucun projet. Clique sur "Nouveau projet" pour commencer.</div>
+        </div>
+      </div>
+
+      <!-- CENTRES D'INTÉRÊT -->
+      <div class="admin-section" id="sec-interets">
+        <div class="section-title"><i class="fas fa-star"></i> Centres d'intérêt</div>
+        <div class="section-sub">Modifie ou ajoute tes centres d'intérêt.</div>
+        <div class="card">
+          <div id="interetsList"></div>
+          <hr/>
+          <div class="card-title"><i class="fas fa-plus"></i> Ajouter un centre d'intérêt</div>
+          <div class="row">
+            <div class="fg"><label>Icône FontAwesome</label><input id="newIntIcon" placeholder="fas fa-robot"/></div>
+            <div class="fg"><label>Titre</label><input id="newIntTitle" placeholder="No-Code & Automatisation"/></div>
+          </div>
+          <div class="fg"><label>Description</label><textarea id="newIntDesc" style="min-height:60px"></textarea></div>
+          <button class="btn btn-cyan btn-sm" onclick="addInteret()"><i class="fas fa-plus"></i> Ajouter</button>
+          <button class="btn" style="margin-left:.5rem" onclick="saveInterets()"><i class="fas fa-save"></i> Enregistrer</button>
+          <div class="msg msg-ok" id="interetsMsg"><i class="fas fa-check"></i> Enregistré !</div>
+        </div>
+      </div>
+
+      <!-- PARAMÈTRES -->
+      <div class="admin-section" id="sec-settings">
+        <div class="section-title"><i class="fas fa-cog"></i> Paramètres</div>
+        <div class="settings-grid">
+          <div class="card">
+            <div class="card-title"><i class="fas fa-key"></i> Changer le mot de passe</div>
+            <div class="fg"><label>Nouveau mot de passe</label><input type="password" id="newPwd1" placeholder="Nouveau mot de passe"/></div>
+            <div class="fg"><label>Confirmer</label><input type="password" id="newPwd2" placeholder="Répéter le mot de passe"/></div>
+            <button class="btn" onclick="changePassword()"><i class="fas fa-save"></i> Changer</button>
+            <div class="msg msg-ok" id="pwdMsg"><i class="fas fa-check"></i> Mot de passe modifié !</div>
+            <div class="msg msg-err" id="pwdErr"><i class="fas fa-times"></i> Les mots de passe ne correspondent pas.</div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fas fa-robot"></i> Webhook n8n (Formulaire Avis)</div>
+            <div class="fg"><label>URL du webhook n8n</label><input id="n8nWebhook" placeholder="https://ton-n8n.app.n8n.cloud/webhook/xxxx"/></div>
+            <button class="btn btn-cyan" onclick="saveWebhook()"><i class="fas fa-save"></i> Enregistrer</button>
+            <div class="msg msg-ok" id="webhookMsg"><i class="fas fa-check"></i> Webhook enregistré !</div>
+            <div class="n8n-info">
+              <strong>// Comment configurer n8n pour recevoir les avis :</strong><br/><br/>
+              <div class="n8n-step">1. Va sur <strong>app.n8n.cloud</strong> ou ton instance n8n</div>
+              <div class="n8n-step">2. Crée un nouveau workflow → Ajoute un nœud <strong>Webhook</strong></div>
+              <div class="n8n-step">3. Configure : Method = <strong>POST</strong>, Path = <strong>portfolio-avis</strong></div>
+              <div class="n8n-step">4. Copie l'URL du webhook → colle-la ci-dessus</div>
+              <div class="n8n-step">5. Ajoute un nœud <strong>Gmail / Email</strong> après le webhook</div>
+              <div class="n8n-step">6. Dans l'email : Subject = <strong>Nouvel avis portfolio</strong>, Body = <strong>{{$json.nom}} : {{$json.message}} — Note : {{$json.note}}/5</strong></div>
+              <div class="n8n-step">7. Active le workflow → Teste en soumettant un avis sur le portfolio</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title"><i class="fas fa-cloud"></i> Synchronisation multi-appareils (JSONBin.io)</div>
+          <div style="font-size:.72rem;color:var(--text-dim);line-height:2;margin-bottom:1rem">Configure JSONBin pour modifier ton portfolio depuis <strong style="color:var(--green)">n'importe quel appareil</strong> (PC, téléphone, tablette).</div>
+          <div class="row">
+            <div class="fg"><label>Bin ID (JSONBin)</label><input id="jsonbinId" placeholder="64abc123..."/></div>
+            <div class="fg"><label>Master Key (JSONBin)</label><input id="jsonbinKey" placeholder="$2a$10$..."/></div>
+          </div>
+          <div style="display:flex;gap:.8rem;flex-wrap:wrap;margin-bottom:.8rem">
+            <button class="btn btn-cyan" onclick="saveCloudConfig()"><i class="fas fa-save"></i> Enregistrer config</button>
+            <button class="btn" onclick="pushToCloud()"><i class="fas fa-upload"></i> Pousser mes données vers le cloud</button>
+            <button class="btn" onclick="pullFromCloud()"><i class="fas fa-download"></i> Récupérer depuis le cloud</button>
+          </div>
+          <div class="msg msg-ok" id="cloudMsg"><i class="fas fa-check"></i> Synchronisation réussie !</div>
+          <div class="msg msg-err" id="cloudErr"><i class="fas fa-times"></i> Erreur de synchronisation. Vérifie tes clés.</div>
+          <div class="n8n-info" style="margin-top:.8rem">
+            <strong>// Comment configurer JSONBin.io (gratuit) :</strong><br/><br/>
+            <div class="n8n-step">1. Va sur <strong>jsonbin.io</strong> → crée un compte gratuit</div>
+            <div class="n8n-step">2. Dashboard → <strong>API Keys</strong> → copie ta <strong>Master Key</strong></div>
+            <div class="n8n-step">3. Crée un nouveau Bin → <strong>New Bin</strong> → colle <code>{}</code> → Save</div>
+            <div class="n8n-step">4. Copie l'ID du Bin (dans l'URL ou l'encadré)</div>
+            <div class="n8n-step">5. Colle Bin ID et Master Key ci-dessus → Enregistrer</div>
+            <div class="n8n-step">6. Clique <strong>"Pousser mes données"</strong> depuis ton PC</div>
+            <div class="n8n-step">7. Sur ton téléphone → ouvre l'admin → <strong>"Récupérer depuis le cloud"</strong> → tes données apparaissent !</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title"><i class="fas fa-database"></i> Export / Import des données</div>
+          <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+            <button class="btn" onclick="exportData()"><i class="fas fa-download"></i> Exporter (JSON)</button>
+            <button class="btn btn-cyan" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> Importer (JSON)</button>
+            <button class="btn btn-red" onclick="resetData()"><i class="fas fa-trash"></i> Réinitialiser</button>
+          </div>
+          <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(this)"/>
+          <div style="font-size:.68rem;color:var(--text-dim);margin-top:.8rem">// L'export te permet de sauvegarder tes données ou de les transférer sur un autre appareil.</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- PROJECT EDIT MODAL -->
+<div class="edit-modal-overlay" id="projEditOverlay">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title" id="projEditTitle">NOUVEAU PROJET</div>
+      <button class="edit-modal-close" onclick="closeProjModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="edit-modal-body">
+      <input type="hidden" id="editProjId"/>
+      <div class="card-title"><i class="fas fa-image"></i> Couverture du projet</div>
+      <div class="fg"><label>URL de l'image de couverture</label><input id="editProjCover" placeholder="https://exemple.com/cover.jpg" oninput="updateCoverPreview()"/></div>
+      <img id="editCoverPreview" style="width:100%;height:160px;object-fit:cover;display:none;border:1px solid var(--border);margin-bottom:1rem"/>
+      <hr/>
+      <div class="row">
+        <div class="fg"><label>Nom du projet *</label><input id="editProjName" placeholder="Network Scanner"/></div>
+        <div class="fg">
+          <label>Statut</label>
+          <select id="editProjStatus"><option value="COMPLETED">COMPLETED</option><option value="ACTIVE">ACTIVE</option><option value="IN PROGRESS">IN PROGRESS</option></select>
+        </div>
+      </div>
+      <div class="fg"><label>Description *</label><textarea id="editProjDesc" placeholder="Décris le projet, son contexte, ses résultats..."></textarea></div>
+      <div class="row">
+        <div class="fg"><label>Tags (séparés par virgule)</label><input id="editProjTags" placeholder="Python, Nmap, OSINT"/></div>
+        <div class="fg"><label>Icône FontAwesome</label><input id="editProjIcon" placeholder="fas fa-search"/></div>
+      </div>
+      <div class="row">
+        <div class="fg"><label>Lien GitHub</label><input id="editProjGithub" placeholder="https://github.com/..."/></div>
+        <div class="fg"><label>Lien Demo (optionnel)</label><input id="editProjDemo" placeholder="https://demo.exemple.com"/></div>
+      </div>
+      <hr/>
+      <div class="card-title"><i class="fas fa-images"></i> Galerie pas à pas</div>
+      <div style="font-size:.68rem;color:var(--text-dim);margin-bottom:1rem">Ajoute des étapes avec images et descriptions. Les visiteurs pourront naviguer pas à pas dans ton projet.</div>
+      <div class="steps-list" id="editStepsList"></div>
+      <button class="btn btn-sm btn-cyan" onclick="addStep()"><i class="fas fa-plus"></i> Ajouter une étape</button>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeProjModal()"><i class="fas fa-times"></i> Annuler</button>
+      <button class="btn" onclick="saveProject()"><i class="fas fa-save"></i> Enregistrer le projet</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPERIENCE EDIT MODAL -->
+<div class="edit-modal-overlay" id="expEditOverlay">
+  <div class="edit-modal">
+    <div class="edit-modal-header">
+      <div class="edit-modal-title" id="expEditTitle">AJOUTER UNE EXPÉRIENCE</div>
+      <button class="edit-modal-close" onclick="closeExpModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="edit-modal-body">
+      <input type="hidden" id="editExpType"/>
+      <input type="hidden" id="editExpIdx" value="-1"/>
+      <div class="fg"><label>Période (ex: Jan 2024 → Juin 2024)</label><input id="editExpDate" placeholder="Jan 2024 → Juin 2024"/></div>
+      <div id="stageFields">
+        <div class="fg"><label>Titre du poste / stage *</label><input id="editExpTitle" placeholder="Analyste SOC / Stage Pentesting..."/></div>
+        <div class="row">
+          <div class="fg"><label>Entreprise</label><input id="editExpCompany" placeholder="Entreprise XYZ"/></div>
+          <div class="fg"><label>Ville</label><input id="editExpLocation" placeholder="Paris"/></div>
+        </div>
+      </div>
+      <div id="acadFields" style="display:none">
+        <div class="fg"><label>Diplôme / Formation *</label><input id="editExpTitleAcad" placeholder="Master Cybersécurité..."/></div>
+        <div class="row">
+          <div class="fg"><label>École / Université</label><input id="editExpInstitution" placeholder="ESAIP, Université..."/></div>
+          <div class="fg"><label>Ville</label><input id="editExpLocationAcad" placeholder="Angers"/></div>
+        </div>
+      </div>
+      <div class="fg"><label>Description (missions, matières, résultats...)</label><textarea id="editExpDesc" style="min-height:100px"></textarea></div>
+      <div class="fg" id="tagsField"><label>Tags / Technologies (séparés par virgule)</label><input id="editExpTags" placeholder="Python, Splunk, Wireshark"/></div>
+    </div>
+    <div class="edit-modal-footer">
+      <button class="btn btn-red btn-sm" onclick="closeExpModal()"><i class="fas fa-times"></i> Annuler</button>
+      <button class="btn" onclick="saveExpEntry()"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ADMIN PANEL — JavaScript
+   ============================================================ */
+
+const DEFAULT_DATA = {
+  password:"Admin@2025", n8n_webhook:"",
+  profile:{photo:null,name:"DJOUMESSI TATSIFANG",firstname:"Fredy Nelson",title:"Ingénieur Cybersécurité",location:"France",accroche:"Passionné par la cybersécurité et la protection des systèmes d'information."},
+  apropos:{paragraphes:["Bonjour, je suis <strong>Fredy Nelson DJOUMESSI TATSIFANG</strong>, étudiant en ingénierie spécialisé en cybersécurité.","Mon objectif est de contribuer à la sécurisation des infrastructures numériques.","[Ajoute ici tes infos complémentaires...]"],photos:[]},
+  infos:{nom:"Fredy Nelson DJOUMESSI",email:"fndjoumessi@gmail.com",tel:"+33 7 58 59 62 75",location:"France",formation:"[Ton école / diplôme]",specialite:"Cybersécurité"},
+  competences:[
+    {id:"sec-off",category:"Sécurité Offensive",icon:"fas fa-crosshairs",skills:[{name:"Pentesting",level:85},{name:"Kali Linux / Metasploit",level:80},{name:"CTF / Exploitation",level:75}]},
+    {id:"cloud",category:"Cloud & DevOps",icon:"fas fa-cloud",skills:[{name:"AWS / Azure",level:70},{name:"Docker / Conteneurs",level:65},{name:"CI/CD Pipelines",level:60}]},
+    {id:"nocode",category:"No-Code & Automatisation",icon:"fas fa-robot",skills:[{name:"n8n",level:90},{name:"Make (Integromat)",level:85},{name:"Waha / WhatsApp API",level:80}]},
+    {id:"reseau",category:"Réseau & Système",icon:"fas fa-network-wired",skills:[{name:"TCP/IP / Protocoles",level:85},{name:"Linux / Windows Server",level:80},{name:"Active Directory",level:65}]}
+  ],
+  certifications:[{name:"TryHackMe",icon:"fas fa-trophy"},{name:"HackTheBox",icon:"fas fa-box"},{name:"[Certif 3]",icon:"fas fa-certificate"}],
+  experiences:{stages:[],academique:[]},
+  projects:[],
+  interets:[
+    {icon:"fas fa-robot",title:"No-Code & Automatisation",desc:"Je passe mon temps libre à créer des systèmes automatisés avec n8n, Make et d'autres outils no-code."},
+    {icon:"fas fa-futbol",title:"Football",desc:"Passionné de football, je suis de près l'actualité sportive et aime jouer en équipe."},
+    {icon:"fas fa-plane",title:"Voyages",desc:"Explorer de nouveaux pays et cultures est une de mes grandes passions."},
+    {icon:"fas fa-cloud",title:"Cloud Computing",desc:"Veille constante sur les nouveautés cloud (AWS, Azure, GCP) et les architectures modernes."}
+  ],
+  contact:{linkedin:"https://www.linkedin.com/in/fredy-nelson-djoumessi-181375394",github:"https://github.com/HERITY-DJOUMSS"}
+};
+
+function saveDataSafe(d) { return saveData(d); }
+function getData(){
+  try{
+    const r=localStorage.getItem('fn_portfolio_data');
+    if(!r) return JSON.parse(JSON.stringify(DEFAULT_DATA));
+    const stored=JSON.parse(r);
+    // Toujours garder le mot de passe et les champs critiques
+    const base=JSON.parse(JSON.stringify(DEFAULT_DATA));
+    Object.keys(stored).forEach(function(k){ base[k]=stored[k]; });
+    // Le mot de passe est prioritaire depuis le localStorage s'il existe
+    if(stored.password) base.password=stored.password;
+    return base;
+  }catch(e){ return JSON.parse(JSON.stringify(DEFAULT_DATA)); }
+}
+function saveData(d) {
+  d._lastUpdated = Date.now();
+  const json = JSON.stringify(d);
+  const sizeKB = Math.round((json.length * 2) / 1024);
+  try {
+    localStorage.setItem('fn_portfolio_data', json);
+    try { window.dispatchEvent(new StorageEvent('storage', { key: 'fn_portfolio_data' })); } catch(e) {}
+    return true;
+  } catch(e) {
+    console.error('localStorage plein:', sizeKB + 'KB');
+    alert('⚠️ Données trop volumineuses (' + sizeKB + ' KB).\nSolution : utilise une URL externe (imgbb.com) pour les photos au lieu de les uploader directement.');
+    return false;
+  }
+});
+      bc.close();
+    }catch(e){}
+    // Fallback StorageEvent
+    try{ window.dispatchEvent(new StorageEvent('storage',{key:'fn_portfolio_data',storageArea:localStorage})); }catch(e){}
+    return true;
+  }catch(e){
+    if(e.name==='QuotaExceededError'){
+      alert('ERREUR : localStorage plein. Utilise une URL externe pour les images.');
+    }else{
+      alert('ERREUR sauvegarde : '+e.message);
+    }
+    return false;
+  }
+}
+function showMsg(id,dur=2500){const el=document.getElementById(id);if(!el)return;el.style.display='flex';setTimeout(()=>el.style.display='none',dur)}
+
+/* ── LOGIN avec limite 3 essais / blocage 5 min ── */
+const MAX_ATTEMPTS = 3;
+const LOCK_DURATION = 5 * 60 * 1000; // 5 minutes en ms
+let lockTimerInterval = null;
+
+function getLoginState() {
+  try {
+    const raw = localStorage.getItem('fn_login_state');
+    return raw ? JSON.parse(raw) : { attempts: 0, lockedUntil: null };
+  } catch(e) { return { attempts: 0, lockedUntil: null }; }
+}
+function setLoginState(state) { localStorage.setItem('fn_login_state', JSON.stringify(state)); }
+
+function updateDots(attempts) {
+  for (let i = 1; i <= 3; i++) {
+    const dot = document.getElementById('dot' + i);
+    if (dot) dot.classList.toggle('used', i <= attempts);
+  }
+}
+
+function showLockScreen(lockedUntil) {
+  const input = document.getElementById('loginPwd');
+  const btn = document.getElementById('loginBtn');
+  const locked = document.getElementById('loginLocked');
+  const err = document.getElementById('loginErr');
+  input.disabled = true;
+  btn.disabled = true;
+  btn.style.opacity = '.4';
+  err.style.display = 'none';
+  locked.style.display = 'flex';
+  updateDots(3);
+
+  if (lockTimerInterval) clearInterval(lockTimerInterval);
+  lockTimerInterval = setInterval(() => {
+    const remaining = lockedUntil - Date.now();
+    if (remaining <= 0) {
+      clearInterval(lockTimerInterval);
+      resetLock();
+      return;
+    }
+    const m = Math.floor(remaining / 60000);
+    const s = Math.floor((remaining % 60000) / 1000);
+    document.getElementById('lockTimer').textContent = m + ':' + String(s).padStart(2, '0');
+  }, 500);
+}
+
+function resetLock() {
+  setLoginState({ attempts: 0, lockedUntil: null });
+  const input = document.getElementById('loginPwd');
+  const btn = document.getElementById('loginBtn');
+  const locked = document.getElementById('loginLocked');
+  const timer = document.getElementById('lockTimer');
+  if(input){ input.disabled = false; input.value = ''; }
+  if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
+  if(locked) locked.style.display = 'none';
+  updateDots(0);
+  if(timer) timer.textContent = '5:00';
+}
+
+function doLogin() {
+  const state = getLoginState();
+
+  // Vérifier si encore bloqué
+  if (state.lockedUntil && Date.now() < state.lockedUntil) {
+    showLockScreen(state.lockedUntil);
+    return;
+  }
+
+  const pwd = document.getElementById('loginPwd').value;
+  const d = getData();
+  // Fallback : si le mot de passe n'est pas dans les données stockées, utiliser celui par défaut
+  const correctPwd = d.password || DEFAULT_DATA.password;
+
+  if (pwd === correctPwd) {
+    // Succès → reset compteur
+    setLoginState({ attempts: 0, lockedUntil: null });
+    localStorage.setItem('fn_admin_auth', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    initAdmin();
+  } else {
+    // Échec → incrémenter
+    const newAttempts = (state.attempts || 0) + 1;
+    const errEl = document.getElementById('loginErr');
+    const errTxt = document.getElementById('loginErrTxt');
+
+    if (newAttempts >= MAX_ATTEMPTS) {
+      const lockedUntil = Date.now() + LOCK_DURATION;
+      setLoginState({ attempts: newAttempts, lockedUntil });
+      showLockScreen(lockedUntil);
+    } else {
+      setLoginState({ attempts: newAttempts, lockedUntil: null });
+      updateDots(newAttempts);
+      const remaining = MAX_ATTEMPTS - newAttempts;
+      errTxt.textContent = `Mot de passe incorrect. ${remaining} essai${remaining > 1 ? 's' : ''} restant.`;
+      errEl.style.display = 'flex';
+      setTimeout(() => { errEl.style.display = 'none'; }, 3000);
+    }
+    document.getElementById('loginPwd').value = '';
+  }
+}
+// Enter key
+document.getElementById('loginPwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+function forceSyncPortfolio(){
+  const d=getData();
+  saveData(d);
+  const btn=event.currentTarget;
+  const orig=btn.innerHTML;
+  btn.innerHTML='<i class="fas fa-check"></i> Sync OK !';
+  btn.style.color='var(--green)';
+  setTimeout(()=>{btn.innerHTML=orig;btn.style.color='';},2000);
+}
+function doLogout() { localStorage.removeItem('fn_admin_auth'); location.reload(); }
+
+// Au chargement : vérifier si déjà bloqué ou déjà connecté
+(function checkOnLoad() {
+  const state = getLoginState();
+  if (state.lockedUntil && Date.now() < state.lockedUntil) {
+    showLockScreen(state.lockedUntil);
+  } else if (state.lockedUntil && Date.now() >= state.lockedUntil) {
+    resetLock();
+  } else {
+    updateDots(state.attempts || 0);
+  }
+  if (localStorage.getItem('fn_admin_auth') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    setTimeout(initAdmin, 50);
+  }
+})();
+
+/* ── NAVIGATION ── */
+document.querySelectorAll('.admin-link').forEach(link=>{
+  link.addEventListener('click',e=>{
+    e.preventDefault();
+    const sec=link.dataset.section;
+    document.querySelectorAll('.admin-link').forEach(l=>l.classList.remove('active'));
+    document.querySelectorAll('.admin-section').forEach(s=>s.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById('sec-'+sec).classList.add('active');
+    loadSection(sec);
+  });
+});
+
+function loadSection(sec){
+  const d=getData();
+  if(sec==='dashboard')loadDashboard(d);
+  else if(sec==='profil')loadProfil(d);
+  else if(sec==='apropos')loadApropos(d);
+  else if(sec==='competences')loadCompetences(d);
+  else if(sec==='certifications')loadCertifs(d);
+  else if(sec==='experiences')loadExperiences(d);
+  else if(sec==='projets')loadProjects(d);
+  else if(sec==='interets')loadInterets(d);
+  else if(sec==='settings')loadSettings(d);
+}
+
+function initAdmin(){loadSection('dashboard');}
+
+/* ── DASHBOARD ── */
+function loadDashboard(d){
+  const el=document.getElementById('dashStats');
+  const items=[
+    {icon:'fas fa-folder-open',label:'Projets',val:d.projects.length,color:'var(--green)'},
+    {icon:'fas fa-briefcase',label:'Stages',val:d.experiences.stages.length,color:'var(--cyan)'},
+    {icon:'fas fa-graduation-cap',label:'Formations',val:d.experiences.academique.length,color:'var(--cyan)'},
+    {icon:'fas fa-certificate',label:'Certifications',val:d.certifications.length,color:'var(--green)'},
+  ];
+  el.innerHTML=items.map(it=>`<div style="background:var(--card);border:1px solid var(--border);padding:1.2rem;text-align:center"><i class="${it.icon}" style="font-size:1.5rem;color:${it.color};margin-bottom:.5rem;display:block"></i><div style="font-family:var(--title);font-size:1.4rem;color:${it.color}">${it.val}</div><div style="font-size:.65rem;color:var(--text-dim);letter-spacing:2px;margin-top:3px">${it.label}</div></div>`).join('');
+}
+
+/* ── PROFIL ── */
+function loadProfil(d){
+  const p=d.profile,i=d.infos;
+  document.getElementById('pNom').value=p.name||'';document.getElementById('pPrenom').value=p.firstname||'';
+  document.getElementById('pTitre').value=p.title||'';document.getElementById('pLoc').value=p.location||'';
+  document.getElementById('pAccroche').value=p.accroche||'';
+  if(p.photo){const prev=document.getElementById('photoPreview');prev.src=p.photo;prev.style.display='block';}
+  document.getElementById('iNom').value=i.nom||'';document.getElementById('iEmail').value=i.email||'';
+  document.getElementById('iTel').value=i.tel||'';document.getElementById('iLoc').value=i.location||'';
+  document.getElementById('iFormation').value=i.formation||'';document.getElementById('iSpecialite').value=i.specialite||'';
+}
+function handlePhotoUpload(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    // Compression : redimensionne a max 600px et qualite 0.75
+    const img=new Image();
+    img.onload=function(){
+      const maxSize=600;
+      let w=img.width, h=img.height;
+      if(w>maxSize||h>maxSize){
+        if(w>h){h=Math.round(h*maxSize/w);w=maxSize;}
+        else{w=Math.round(w*maxSize/h);h=maxSize;}
+      }
+      const canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      const ctx=canvas.getContext('2d');
+      ctx.drawImage(img,0,0,w,h);
+      const compressed=canvas.toDataURL('image/jpeg',0.75);
+      const sizeKB=Math.round(compressed.length*0.75/1024);
+      const prev=document.getElementById('photoPreview');
+      prev.src=compressed;prev.style.display='block';
+      document.getElementById('photoSizeInfo').textContent='// Image: '+sizeKB+'KB (compressée '+w+'x'+h+'px)';
+      const d=getData();d.profile.photo=compressed;
+      const ok=saveDataSafe(d);
+      if(ok){document.getElementById('photoSizeInfo').style.color='var(--green)';}
+      else{document.getElementById('photoSizeInfo').textContent='ERREUR: trop lourd, utilise une URL externe';document.getElementById('photoSizeInfo').style.color='var(--red)';}
+    };
+    img.src=e.target.result;
+  };reader.readAsDataURL(file);
+}
+function applyPhotoUrl(){
+  const url=document.getElementById('photoUrl').value.trim();if(!url)return;
+  const prev=document.getElementById('photoPreview');prev.src=url;prev.style.display='block';
+  const d=getData();d.profile.photo=url;saveData(d);
+}
+function saveProfil(){
+  const d=getData();
+  d.profile.name=document.getElementById('pNom').value;d.profile.firstname=document.getElementById('pPrenom').value;
+  d.profile.title=document.getElementById('pTitre').value;d.profile.location=document.getElementById('pLoc').value;
+  d.profile.accroche=document.getElementById('pAccroche').value;
+  saveData(d);showMsg('profilMsg');
+}
+function saveInfos(){
+  const d=getData();
+  d.infos.nom=document.getElementById('iNom').value;d.infos.email=document.getElementById('iEmail').value;
+  d.infos.tel=document.getElementById('iTel').value;d.infos.location=document.getElementById('iLoc').value;
+  d.infos.formation=document.getElementById('iFormation').value;d.infos.specialite=document.getElementById('iSpecialite').value;
+  saveData(d);showMsg('infosMsg');
+}
+
+/* ── À PROPOS ── */
+function loadApropos(d){
+  renderParaContainer(d.apropos.paragraphes);
+  renderApPhotos(d.apropos.photos||[]);
+}
+function renderParaContainer(paras){
+  const c=document.getElementById('paraContainer');
+  c.innerHTML=paras.map((p,i)=>`
+    <div class="fg" style="display:flex;gap:.5rem;align-items:flex-start">
+      <textarea id="para_${i}" style="min-height:70px;flex:1">${p}</textarea>
+      <button class="btn btn-red btn-sm" onclick="deletePara(${i})"><i class="fas fa-trash"></i></button>
+    </div>`).join('');
+}
+function addParagraph(){const d=getData();d.apropos.paragraphes.push('[Nouveau paragraphe...]');saveData(d);renderParaContainer(d.apropos.paragraphes);}
+function deletePara(i){const d=getData();d.apropos.paragraphes.splice(i,1);saveData(d);renderParaContainer(d.apropos.paragraphes);}
+function addAproposPhoto(){
+  const url=document.getElementById('apImgUrl').value.trim();
+  const cap=document.getElementById('apImgCaption').value.trim();
+  if(!url)return;
+  const d=getData();if(!d.apropos.photos)d.apropos.photos=[];
+  d.apropos.photos.push({src:url,caption:cap});saveData(d);
+  renderApPhotos(d.apropos.photos);
+  document.getElementById('apImgUrl').value='';document.getElementById('apImgCaption').value='';
+}
+function renderApPhotos(photos){
+  const el=document.getElementById('aproposPhotoList');
+  el.innerHTML=photos.map((ph,i)=>`<div class="ap-photo-item"><img src="${ph.src}" onerror="this.style.display='none'"/><div class="ap-photo-caption">${ph.caption||''}</div><button class="ap-photo-del" onclick="deleteApPhoto(${i})"><i class="fas fa-times"></i></button></div>`).join('');
+}
+function deleteApPhoto(i){const d=getData();d.apropos.photos.splice(i,1);saveData(d);renderApPhotos(d.apropos.photos);}
+function saveApropos(){
+  const d=getData();
+  const paras=[];let i=0;while(document.getElementById('para_'+i)){paras.push(document.getElementById('para_'+i).value);i++;}
+  d.apropos.paragraphes=paras;saveData(d);showMsg('aproposMsg');
+}
+
+/* ── COMPÉTENCES ── */
+function loadCompetences(d){
+  const el=document.getElementById('competencesEditor');
+  el.innerHTML=d.competences.map((cat,ci)=>`
+    <div class="card cat-block">
+      <div class="cat-header">
+        <div style="display:flex;gap:.5rem;align-items:center;flex:1">
+          <input value="${cat.icon}" placeholder="fas fa-code" style="width:160px" id="cat_icon_${ci}"/>
+          <input value="${cat.category}" placeholder="Nom catégorie" style="flex:1" id="cat_name_${ci}"/>
+        </div>
+        <button class="btn btn-red btn-sm" onclick="deleteCat(${ci})"><i class="fas fa-trash"></i></button>
+      </div>
+      <div class="skills-edit-list" id="skills_${ci}">
+        ${cat.skills.map((s,si)=>`
+          <div class="skill-edit-row" id="skillrow_${ci}_${si}">
+            <input value="${s.name}" placeholder="Nom compétence" id="sname_${ci}_${si}"/>
+            <input type="range" min="0" max="100" value="${s.level}" id="slevel_${ci}_${si}" oninput="document.getElementById('sshow_${ci}_${si}').textContent=this.value+'%'"/>
+            <span class="skill-level-show" id="sshow_${ci}_${si}">${s.level}%</span>
+            <button class="btn btn-red btn-sm" onclick="deleteSkill(${ci},${si})"><i class="fas fa-times"></i></button>
+          </div>`).join('')}
+      </div>
+      <button class="btn btn-sm btn-cyan" style="margin-top:.8rem" onclick="addSkill(${ci})"><i class="fas fa-plus"></i> Ajouter compétence</button>
+    </div>`).join('');
+}
+function deleteCat(ci){const d=getData();d.competences.splice(ci,1);saveData(d);loadCompetences(d);}
+function addSkill(ci){
+  const d=getData();d.competences[ci].skills.push({name:'Nouvelle compétence',level:50});saveData(d);loadCompetences(d);
+}
+function deleteSkill(ci,si){const d=getData();d.competences[ci].skills.splice(si,1);saveData(d);loadCompetences(d);}
+function saveCompetences(){
+  const d=getData();
+  d.competences.forEach((cat,ci)=>{
+    const nameEl=document.getElementById('cat_name_'+ci);const iconEl=document.getElementById('cat_icon_'+ci);
+    if(nameEl)cat.category=nameEl.value;if(iconEl)cat.icon=iconEl.value;
+    cat.skills.forEach((s,si)=>{
+      const nameEl=document.getElementById('sname_'+ci+'_'+si);const levelEl=document.getElementById('slevel_'+ci+'_'+si);
+      if(nameEl)s.name=nameEl.value;if(levelEl)s.level=parseInt(levelEl.value);
+    });
+  });
+  saveData(d);showMsg('compMsg');
+}
+
+/* ── CERTIFICATIONS ── */
+function loadCertifs(d){
+  const el=document.getElementById('certifsList');
+  el.innerHTML=d.certifications.map((c,i)=>`
+    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.5rem;padding:.6rem;border:1px solid var(--border);background:rgba(0,0,0,.2)">
+      <i class="${c.icon||'fas fa-certificate'}" style="color:var(--cyan);width:16px"></i>
+      <span style="flex:1;font-size:.78rem;color:var(--green)">${c.name}</span>
+      <button class="btn btn-red btn-sm" onclick="deleteCertif(${i})"><i class="fas fa-trash"></i></button>
+    </div>`).join('') || '<div style="font-size:.75rem;color:var(--text-dim)">Aucune certification.</div>';
+}
+function addCertif(){
+  const name=document.getElementById('newCertName').value.trim();if(!name)return;
+  const icon=document.getElementById('newCertIcon').value.trim()||'fas fa-certificate';
+  const d=getData();d.certifications.push({name,icon});saveData(d);loadCertifs(d);
+  document.getElementById('newCertName').value='';document.getElementById('newCertIcon').value='';
+}
+function deleteCertif(i){const d=getData();d.certifications.splice(i,1);saveData(d);loadCertifs(d);}
+function saveCertifs(){saveData(getData());showMsg('certifMsg');}
+
+/* ── EXPÉRIENCES ── */
+let editExpType='stage';
+function loadExperiences(d){
+  const sl=document.getElementById('stagesList');const al=document.getElementById('acadList');
+  sl.innerHTML=d.experiences.stages.length?d.experiences.stages.map((e,i)=>`
+    <div style="border:1px solid var(--border);padding:.8rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2)">
+      <div><div style="font-size:.78rem;color:var(--green)">${e.title}</div><div style="font-size:.65rem;color:var(--text-dim)">${e.date} · ${e.company}</div></div>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-sm btn-cyan" onclick="openExpModal('stage',${i})"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm btn-red" onclick="deleteExp('stage',${i})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`).join(''):`<div style="font-size:.75rem;color:var(--text-dim);padding:.8rem">Aucun stage ajouté.</div>`;
+  al.innerHTML=d.experiences.academique.length?d.experiences.academique.map((e,i)=>`
+    <div style="border:1px solid var(--border);padding:.8rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2)">
+      <div><div style="font-size:.78rem;color:var(--green)">${e.title}</div><div style="font-size:.65rem;color:var(--text-dim)">${e.date} · ${e.institution}</div></div>
+      <div style="display:flex;gap:.4rem">
+        <button class="btn btn-sm btn-cyan" onclick="openExpModal('academique',${i})"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm btn-red" onclick="deleteExp('academique',${i})"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`).join(''):`<div style="font-size:.75rem;color:var(--text-dim);padding:.8rem">Aucune formation ajoutée.</div>`;
+}
+function openExpModal(type,idx=-1){
+  editExpType=type;
+  document.getElementById('editExpIdx').value=idx;
+  document.getElementById('expEditTitle').textContent=type==='stage'?'STAGE / EMPLOI':'FORMATION ACADÉMIQUE';
+  document.getElementById('stageFields').style.display=type==='stage'?'block':'none';
+  document.getElementById('acadFields').style.display=type==='academique'?'block':'none';
+  document.getElementById('tagsField').style.display=type==='stage'?'block':'none';
+  // Reset
+  ['editExpDate','editExpTitle','editExpCompany','editExpLocation','editExpTitleAcad','editExpInstitution','editExpLocationAcad','editExpDesc','editExpTags'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  if(idx>=0){
+    const d=getData();const list=type==='stage'?d.experiences.stages:d.experiences.academique;const e=list[idx];
+    document.getElementById('editExpDate').value=e.date||'';
+    document.getElementById('editExpDesc').value=e.description||'';
+    if(type==='stage'){document.getElementById('editExpTitle').value=e.title||'';document.getElementById('editExpCompany').value=e.company||'';document.getElementById('editExpLocation').value=e.location||'';document.getElementById('editExpTags').value=(e.tags||[]).join(', ');}
+    else{document.getElementById('editExpTitleAcad').value=e.title||'';document.getElementById('editExpInstitution').value=e.institution||'';document.getElementById('editExpLocationAcad').value=e.location||'';}
+  }
+  document.getElementById('expEditOverlay').classList.add('open');
+}
+function closeExpModal(){document.getElementById('expEditOverlay').classList.remove('open');}
+function saveExpEntry(){
+  const d=getData();const idx=parseInt(document.getElementById('editExpIdx').value);const type=editExpType;
+  const entry={date:document.getElementById('editExpDate').value,description:document.getElementById('editExpDesc').value};
+  if(type==='stage'){entry.title=document.getElementById('editExpTitle').value;entry.company=document.getElementById('editExpCompany').value;entry.location=document.getElementById('editExpLocation').value;entry.tags=document.getElementById('editExpTags').value.split(',').map(t=>t.trim()).filter(Boolean);}
+  else{entry.title=document.getElementById('editExpTitleAcad').value;entry.institution=document.getElementById('editExpInstitution').value;entry.location=document.getElementById('editExpLocationAcad').value;}
+  const list=type==='stage'?d.experiences.stages:d.experiences.academique;
+  if(idx>=0)list[idx]=entry;else list.unshift(entry);
+  saveData(d);closeExpModal();loadExperiences(d);
+}
+function deleteExp(type,i){const d=getData();(type==='stage'?d.experiences.stages:d.experiences.academique).splice(i,1);saveData(d);loadExperiences(d);}
+function saveExperiences(){showMsg('expMsg');}
+
+/* ── PROJETS ── */
+function loadProjects(d){
+  const el=document.getElementById('adminProjectsList');
+  if(!d.projects.length){el.innerHTML='<div class="no-proj"><i class="fas fa-folder-open" style="font-size:1.5rem;display:block;margin-bottom:.5rem;color:var(--green3)"></i>Aucun projet. Clique sur "Nouveau projet".</div>';return;}
+  el.innerHTML=d.projects.map((p,i)=>`
+    <div class="proj-item">
+      <div class="proj-item-cover">${p.cover?`<img src="${p.cover}" onerror="this.style.display='none'"/>`:`<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--green3)"><i class="${p.icon||'fas fa-code'}"></i></div>`}</div>
+      <div class="proj-item-info">
+        <div class="proj-item-name">${p.name}</div>
+        <div class="proj-item-tags">${(p.tags||[]).join(' · ')} · ${(p.steps||[]).length} étape(s)</div>
+      </div>
+      <span class="badge ${p.status==='ACTIVE'?'badge-r':'badge-g'}">${p.status||'COMPLETED'}</span>
+      <div class="proj-item-actions">
+        <button class="btn btn-sm btn-cyan" onclick="openProjectModal('${p.id}')"><i class="fas fa-edit"></i></button>
+        <button class="btn btn-sm btn-red" onclick="deleteProject('${p.id}')"><i class="fas fa-trash"></i></button>
+      </div>
+    </div>`).join('');
+}
+let editingSteps=[];
+function openProjectModal(projId){
+  const d=getData();const proj=projId?d.projects.find(p=>p.id===projId):null;
+  document.getElementById('projEditTitle').textContent=proj?'MODIFIER LE PROJET':'NOUVEAU PROJET';
+  document.getElementById('editProjId').value=proj?proj.id:'';
+  document.getElementById('editProjName').value=proj?proj.name:'';
+  document.getElementById('editProjDesc').value=proj?proj.description:'';
+  document.getElementById('editProjStatus').value=proj?proj.status:'COMPLETED';
+  document.getElementById('editProjTags').value=proj?(proj.tags||[]).join(', '):'';
+  document.getElementById('editProjIcon').value=proj?proj.icon||'':'fas fa-code';
+  document.getElementById('editProjGithub').value=proj?proj.github||'':'';
+  document.getElementById('editProjDemo').value=proj?proj.demo||'':'';
+  document.getElementById('editProjCover').value=proj?proj.cover||'':'';
+  const prev=document.getElementById('editCoverPreview');
+  if(proj&&proj.cover){prev.src=proj.cover;prev.style.display='block';}else{prev.style.display='none';}
+  editingSteps=proj?JSON.parse(JSON.stringify(proj.steps||[])):[];
+  renderStepsEditor();
+  document.getElementById('projEditOverlay').classList.add('open');
+}
+function updateCoverPreview(){const url=document.getElementById('editProjCover').value;const prev=document.getElementById('editCoverPreview');if(url){prev.src=url;prev.style.display='block';}else{prev.style.display='none';}}
+function closeProjModal(){document.getElementById('projEditOverlay').classList.remove('open');}
+function addStep(){editingSteps.push({image:'',title:'',caption:''});renderStepsEditor();}
+function deleteStep(i){editingSteps.splice(i,1);renderStepsEditor();}
+function renderStepsEditor(){
+  const el=document.getElementById('editStepsList');
+  el.innerHTML=editingSteps.map((s,i)=>`
+    <div class="step-edit-item">
+      <div class="step-edit-header"><span class="step-num">ÉTAPE ${i+1}</span><button class="btn btn-red btn-sm" onclick="deleteStep(${i})"><i class="fas fa-times"></i></button></div>
+      ${s.image?`<img src="${s.image}" class="step-edit-preview" onerror="this.style.display='none'"/>`:''}
+      <div class="fg"><label>URL de l'image</label><input id="simg_${i}" value="${s.image||''}" placeholder="https://exemple.com/step1.jpg" oninput="editingSteps[${i}].image=this.value;renderStepsEditor()"/></div>
+      <div class="fg"><label>Titre de l'étape</label><input id="stitle_${i}" value="${s.title||''}" placeholder="Ex: Analyse du réseau" oninput="editingSteps[${i}].title=this.value"/></div>
+      <div class="fg"><label>Description / Légende</label><textarea id="scap_${i}" style="min-height:65px" oninput="editingSteps[${i}].caption=this.value">${s.caption||''}</textarea></div>
+    </div>`).join('') || '<div style="font-size:.72rem;color:var(--text-dim);padding:1rem;text-align:center">Aucune étape. Clique sur "Ajouter une étape".</div>';
+}
+function saveProject(){
+  const d=getData();const id=document.getElementById('editProjId').value||'proj_'+Date.now();
+  // Sync steps from DOM
+  editingSteps.forEach((s,i)=>{
+    const t=document.getElementById('stitle_'+i);const c=document.getElementById('scap_'+i);
+    if(t)s.title=t.value;if(c)s.caption=c.value;
+  });
+  const proj={
+    id,name:document.getElementById('editProjName').value,description:document.getElementById('editProjDesc').value,
+    status:document.getElementById('editProjStatus').value,tags:document.getElementById('editProjTags').value.split(',').map(t=>t.trim()).filter(Boolean),
+    icon:document.getElementById('editProjIcon').value||'fas fa-code',github:document.getElementById('editProjGithub').value,
+    demo:document.getElementById('editProjDemo').value,cover:document.getElementById('editProjCover').value,
+    steps:JSON.parse(JSON.stringify(editingSteps))
+  };
+  const idx=d.projects.findIndex(p=>p.id===id);
+  if(idx>=0)d.projects[idx]=proj;else d.projects.push(proj);
+  saveData(d);closeProjModal();loadProjects(d);
+}
+function deleteProject(id){if(!confirm('Supprimer ce projet ?'))return;const d=getData();d.projects=d.projects.filter(p=>p.id!==id);saveData(d);loadProjects(d);}
+
+/* ── CENTRES D'INTÉRÊT ── */
+function loadInterets(d){
+  const el=document.getElementById('interetsList');
+  el.innerHTML=d.interets.map((it,i)=>`
+    <div style="border:1px solid var(--border);padding:.8rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2)">
+      <div><i class="${it.icon}" style="color:var(--green3);margin-right:.5rem"></i><span style="font-size:.78rem;color:var(--green)">${it.title}</span><div style="font-size:.65rem;color:var(--text-dim)">${it.desc.slice(0,60)}...</div></div>
+      <button class="btn btn-red btn-sm" onclick="deleteInteret(${i})"><i class="fas fa-trash"></i></button>
+    </div>`).join('') || '<div style="font-size:.75rem;color:var(--text-dim)">Aucun centre d\'intérêt.</div>';
+}
+function addInteret(){
+  const icon=document.getElementById('newIntIcon').value.trim()||'fas fa-star';
+  const title=document.getElementById('newIntTitle').value.trim();
+  const desc=document.getElementById('newIntDesc').value.trim();
+  if(!title)return;
+  const d=getData();d.interets.push({icon,title,desc});saveData(d);loadInterets(d);
+  document.getElementById('newIntIcon').value='';document.getElementById('newIntTitle').value='';document.getElementById('newIntDesc').value='';
+}
+function deleteInteret(i){const d=getData();d.interets.splice(i,1);saveData(d);loadInterets(d);}
+function saveInterets(){showMsg('interetsMsg');}
+
+/* ── SETTINGS ── */
+function loadSettings(d){
+  document.getElementById('n8nWebhook').value=d.n8n_webhook||'';
+  const cfg=getCloudConfigAdmin();
+  document.getElementById('jsonbinId').value=cfg.binId||'';
+  document.getElementById('jsonbinKey').value=cfg.apiKey||'';
+}
+function getCloudConfigAdmin(){
+  try{return JSON.parse(localStorage.getItem('fn_cloud_config')||'{}');}catch(e){return{};}
+}
+function saveCloudConfig(){
+  const cfg={binId:document.getElementById('jsonbinId').value.trim(),apiKey:document.getElementById('jsonbinKey').value.trim()};
+  localStorage.setItem('fn_cloud_config',JSON.stringify(cfg));
+  showMsg('cloudMsg');
+}
+async function pushToCloud(){
+  const cfg=getCloudConfigAdmin();
+  if(!cfg.binId||!cfg.apiKey){document.getElementById('cloudErr').style.display='flex';setTimeout(()=>document.getElementById('cloudErr').style.display='none',3000);return;}
+  const d=getData();
+  try{
+    const res=await fetch('https://api.jsonbin.io/v3/b/'+cfg.binId,{
+      method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':cfg.apiKey},
+      body:JSON.stringify(d)
+    });
+    if(res.ok){showMsg('cloudMsg');}else{document.getElementById('cloudErr').style.display='flex';setTimeout(()=>document.getElementById('cloudErr').style.display='none',3000);}
+  }catch(e){document.getElementById('cloudErr').style.display='flex';setTimeout(()=>document.getElementById('cloudErr').style.display='none',3000);}
+}
+async function pullFromCloud(){
+  const cfg=getCloudConfigAdmin();
+  if(!cfg.binId||!cfg.apiKey){document.getElementById('cloudErr').style.display='flex';setTimeout(()=>document.getElementById('cloudErr').style.display='none',3000);return;}
+  try{
+    const res=await fetch('https://api.jsonbin.io/v3/b/'+cfg.binId+'/latest',{headers:{'X-Master-Key':cfg.apiKey}});
+    if(!res.ok)throw new Error();
+    const json=await res.json();
+    saveData(json.record);
+    showMsg('cloudMsg');
+    setTimeout(()=>location.reload(),1500);
+  }catch(e){document.getElementById('cloudErr').style.display='flex';setTimeout(()=>document.getElementById('cloudErr').style.display='none',3000);}
+}
+function changePassword(){
+  const p1=document.getElementById('newPwd1').value,p2=document.getElementById('newPwd2').value;
+  if(p1!==p2){document.getElementById('pwdErr').style.display='flex';setTimeout(()=>document.getElementById('pwdErr').style.display='none',2000);return;}
+  if(!p1){return;}
+  const d=getData();d.password=p1;saveData(d);showMsg('pwdMsg');
+  document.getElementById('newPwd1').value='';document.getElementById('newPwd2').value='';
+}
+function saveWebhook(){
+  const d=getData();d.n8n_webhook=document.getElementById('n8nWebhook').value.trim();saveData(d);showMsg('webhookMsg');
+}
+function exportData(){
+  const d=getData();const blob=new Blob([JSON.stringify(d,null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='fn_portfolio_data.json';a.click();
+}
+function importData(input){
+  const file=input.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{try{const d=JSON.parse(e.target.result);saveData(d);alert('✓ Données importées ! Recharge la page.');location.reload();}catch(err){alert('Erreur : fichier JSON invalide.');}};
+  reader.readAsText(file);
+}
+function resetData(){
+  if(!confirm('Réinitialiser toutes les données ? Cette action est irréversible.'))return;
+  localStorage.removeItem('fn_portfolio_data');location.reload();
+}
+</script>
+</body>
+</html>
