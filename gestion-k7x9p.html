@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>[FN_SEC] Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--bg:#050908;--card:#0d1a10;--green:#00ff41;--green2:#00cc33;--green3:#009922;--cyan:#00ffff;--red:#ff3b3b;--border:rgba(0,255,65,.18);--border2:rgba(0,255,65,.35);--text:#b0ffbe;--dim:#4a8a5a;--font:'Share Tech Mono',monospace;--title:'Orbitron',monospace}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font-family:var(--font);min-height:100vh}
+a{text-decoration:none;color:inherit}
+input,textarea,select{background:rgba(0,0,0,.5);border:1px solid var(--border);color:var(--green);font-family:var(--font);font-size:.78rem;padding:.6rem .9rem;outline:none;width:100%;transition:border-color .3s}
+input:focus,textarea:focus,select:focus{border-color:var(--green)}
+input::placeholder,textarea::placeholder{color:var(--dim);opacity:.5}
+textarea{resize:vertical;min-height:80px}
+label{font-size:.65rem;color:var(--dim);letter-spacing:2px;display:block;margin-bottom:.35rem}
+.fg{margin-bottom:1rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+button{cursor:pointer;font-family:var(--font)}
+.btn{border:1px solid var(--green);color:var(--green);background:transparent;font-size:.75rem;padding:.6rem 1.2rem;letter-spacing:2px;transition:all .3s;display:inline-flex;align-items:center;gap:.4rem}
+.btn:hover{background:rgba(0,255,65,.1)}
+.btn-red{border-color:var(--red);color:var(--red)}.btn-red:hover{background:rgba(255,59,59,.1)}
+.btn-cyan{border-color:var(--cyan);color:var(--cyan)}.btn-cyan:hover{background:rgba(0,255,255,.1)}
+.btn-sm{padding:.35rem .8rem;font-size:.68rem}
+hr{border:none;border-top:1px solid var(--border);margin:1.2rem 0}
+.msg{padding:.7rem 1rem;font-size:.75rem;margin-top:.8rem;display:none;align-items:center;gap:.5rem;border-radius:2px}
+.msg-ok{border:1px solid var(--green2);color:var(--green);background:rgba(0,255,65,.05)}
+.msg-err{border:1px solid var(--red);color:var(--red);background:rgba(255,59,59,.05)}
+
+/* LOGIN */
+#loginScreen{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:9999}
+.login-box{border:1px solid var(--border2);padding:3rem;width:380px;text-align:center;box-shadow:0 0 40px rgba(0,255,65,.1)}
+.login-logo{font-family:var(--title);font-size:1.2rem;color:var(--green);letter-spacing:3px;margin-bottom:.5rem;text-shadow:0 0 20px rgba(0,255,65,.4)}
+.login-sub{font-size:.68rem;color:var(--dim);letter-spacing:2px;margin-bottom:1.5rem}
+.attempts-bar{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.2rem}
+.adot{width:12px;height:12px;border:1px solid var(--border2)}
+.adot.used{background:var(--red);border-color:var(--red)}
+.login-box input{text-align:center;margin-bottom:.8rem;letter-spacing:4px}
+#loginErr{font-size:.72rem;color:var(--red);margin-top:.5rem;display:none;justify-content:center;align-items:center;gap:.4rem}
+.lock-panel{border:1px solid var(--red);padding:1.2rem;margin-top:1rem;display:none;flex-direction:column;align-items:center;gap:.5rem;background:rgba(255,59,59,.05)}
+.lock-timer{font-family:var(--title);font-size:1.8rem;color:var(--red)}
+.lock-sub{font-size:.62rem;color:var(--dim);text-align:center}
+
+/* LAYOUT */
+#dashboard{display:none;min-height:100vh}
+.admin-header{height:58px;background:rgba(5,9,8,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;position:sticky;top:0;z-index:100}
+.header-logo{font-family:var(--title);font-size:.9rem;color:var(--green);letter-spacing:2px}
+.header-right{display:flex;align-items:center;gap:1rem;font-size:.72rem}
+.header-link{color:var(--cyan);display:flex;align-items:center;gap:.3rem;transition:color .3s}
+.header-link:hover{color:var(--green)}
+.layout{display:flex;min-height:calc(100vh - 58px)}
+.admin-sidebar{width:210px;background:rgba(0,0,0,.4);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column}
+.admin-nav{display:flex;flex-direction:column;padding:1rem 0;flex:1}
+.alink{display:flex;align-items:center;gap:.8rem;padding:.8rem 1.2rem;font-size:.73rem;color:var(--dim);letter-spacing:1px;border-left:3px solid transparent;transition:all .3s;cursor:pointer}
+.alink i{width:16px;color:var(--green3);font-size:.85rem}
+.alink:hover,.alink.active{color:var(--green);border-left-color:var(--green);background:rgba(0,255,65,.05)}
+.alink:hover i,.alink.active i{color:var(--green)}
+.admin-main{flex:1;padding:2rem;overflow-y:auto;max-height:calc(100vh - 58px)}
+.asec{display:none}.asec.active{display:block}
+.sec-title{font-family:var(--title);font-size:1rem;color:var(--green);letter-spacing:3px;margin-bottom:.4rem;padding-bottom:.7rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.7rem}
+.sec-title i{color:var(--cyan);font-size:.9rem}
+.sec-sub{font-size:.7rem;color:var(--dim);margin-bottom:1.5rem;letter-spacing:1px}
+.card{background:var(--card);border:1px solid var(--border);padding:1.5rem;margin-bottom:1rem}
+.card-title{font-size:.78rem;color:var(--cyan);letter-spacing:2px;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card-title i{color:var(--green3)}
+.no-item{font-size:.75rem;color:var(--dim);text-align:center;padding:1.5rem;border:1px dashed var(--border)}
+
+/* Liste items */
+.list-item{border:1px solid var(--border);padding:.8rem 1rem;margin-bottom:.5rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);gap:.8rem}
+.list-item-info{flex:1}
+.list-item-name{font-size:.8rem;color:var(--green);margin-bottom:.2rem}
+.list-item-sub{font-size:.65rem;color:var(--dim)}
+.list-item-actions{display:flex;gap:.4rem;flex-shrink:0}
+
+/* Skill editor */
+.skill-edit-row{display:grid;grid-template-columns:1fr auto auto auto;gap:.5rem;align-items:center;margin-bottom:.5rem}
+.skill-edit-row input[type=range]{accent-color:var(--green);padding:0}
+.slevel{font-size:.7rem;color:var(--cyan);width:35px;text-align:right}
+
+/* Photo uploader */
+.img-drop{border:2px dashed var(--border2);padding:1.5rem;text-align:center;cursor:pointer;transition:all .3s}
+.img-drop:hover{border-color:var(--green);background:rgba(0,255,65,.03)}
+.img-drop i{font-size:1.8rem;color:var(--green3);display:block;margin-bottom:.4rem}
+.img-drop span{font-size:.7rem;color:var(--dim)}
+#photoPreview{width:100%;max-height:200px;object-fit:cover;display:none;border:1px solid var(--border);margin-top:.8rem}
+#photoSizeInfo{font-size:.65rem;color:var(--dim);margin-top:.4rem}
+
+/* Steps editor */
+.step-edit{border:1px solid var(--border);padding:1rem;margin-bottom:.8rem;background:rgba(0,0,0,.2)}
+.step-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:.8rem}
+.step-num{font-size:.7rem;color:var(--cyan);letter-spacing:2px}
+.step-preview{width:100%;height:100px;object-fit:cover;display:block;border:1px solid var(--border);margin-bottom:.5rem}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .3s}
+.modal-overlay.open{opacity:1;pointer-events:all}
+.modal-box{background:#060d07;border:1px solid var(--border2);width:100%;max-width:720px;margin:auto;position:relative;max-height:90vh;overflow-y:auto}
+.modal-hdr{padding:1.1rem 1.5rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#060d07;z-index:10}
+.modal-title{font-family:var(--title);font-size:.9rem;color:var(--green);letter-spacing:2px}
+.modal-close{background:transparent;border:1px solid var(--border);color:var(--dim);width:30px;height:30px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+.modal-close:hover{border-color:var(--red);color:var(--red)}
+.modal-body{padding:1.5rem}
+.modal-ftr{padding:1rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.8rem;position:sticky;bottom:0;background:#060d07}
+
+/* n8n info */
+.info-box{background:rgba(0,255,65,.04);border:1px solid var(--border);padding:1rem;font-size:.72rem;color:var(--dim);line-height:2;margin-top:1rem}
+.info-box strong{color:var(--cyan)}
+.info-step{margin-bottom:.4rem;padding-left:.8rem;border-left:2px solid var(--green3)}
+.badge{font-size:.6rem;border:1px solid;padding:2px 7px;letter-spacing:1px}
+.badge-g{border-color:var(--green2);color:var(--green2)}.badge-r{border-color:var(--red);color:var(--red)}.badge-c{border-color:var(--cyan);color:var(--cyan)}
+
+/* Apropos photos */
+.ap-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.7rem;margin:1rem 0}
+.ap-item{border:1px solid var(--border);overflow:hidden;position:relative}
+.ap-item img{width:100%;height:100px;object-fit:cover;display:block}
+.ap-item-cap{padding:.4rem;font-size:.62rem;color:var(--dim)}
+.ap-del{position:absolute;top:4px;right:4px;background:rgba(255,59,59,.85);border:none;color:#fff;width:22px;height:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.7rem}
+
+/* Settings */
+.settings-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem}
+
+@media(max-width:700px){.admin-sidebar{display:none}.settings-grid{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">[FN_SEC]</div>
+    <div class="login-sub">// INTERFACE ADMIN — ACCÈS RESTREINT</div>
+    <div class="attempts-bar">
+      <div class="adot" id="d1"></div>
+      <div class="adot" id="d2"></div>
+      <div class="adot" id="d3"></div>
+    </div>
+    <input type="password" id="loginPwd" placeholder="Mot de passe" autocomplete="current-password"/>
+    <button class="btn" id="loginBtn" style="width:100%;justify-content:center">
+      <i class="fas fa-terminal"></i> CONNEXION
+    </button>
+    <div id="loginErr"><i class="fas fa-exclamation-triangle"></i> <span id="loginErrTxt">Mot de passe incorrect.</span></div>
+    <div class="lock-panel" id="lockPanel">
+      <div style="font-size:.75rem;color:var(--red);letter-spacing:2px"><i class="fas fa-lock"></i> ACCÈS BLOQUÉ</div>
+      <div class="lock-timer" id="lockTimer">5:00</div>
+      <div class="lock-sub">Trop de tentatives. Réessaie dans le temps indiqué.</div>
+    </div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <header class="admin-header">
+    <div class="header-logo">[FN_SEC] // ADMIN</div>
+    <div class="header-right">
+      <a href="index.html" target="_blank" class="header-link"><i class="fas fa-external-link-alt"></i> Voir le portfolio</a>
+      <button class="btn btn-sm" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+    </div>
+  </header>
+  <div class="layout">
+    <aside class="admin-sidebar">
+      <nav class="admin-nav">
+        <div class="alink active" data-sec="dash"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="alink" data-sec="profil"><i class="fas fa-user-circle"></i> Profil &amp; Photo</div>
+        <div class="alink" data-sec="apropos"><i class="fas fa-user-shield"></i> À Propos</div>
+        <div class="alink" data-sec="competences"><i class="fas fa-code"></i> Compétences</div>
+        <div class="alink" data-sec="certifications"><i class="fas fa-certificate"></i> Certifications</div>
+        <div class="alink" data-sec="experiences"><i class="fas fa-briefcase"></i> Expérience</div>
+        <div class="alink" data-sec="projets"><i class="fas fa-folder-open"></i> Projets</div>
+        <div class="alink" data-sec="interets"><i class="fas fa-star"></i> Centres d'intérêt</div>
+        <div class="alink" data-sec="settings"><i class="fas fa-cog"></i> Paramètres</div>
+      </nav>
+    </aside>
+    <main class="admin-main">
+
+      <!-- DASHBOARD -->
+      <div class="asec active" id="sec-dash">
+        <div class="sec-title"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="sec-sub">Bienvenue. Sélectionne une section pour modifier ton portfolio.</div>
+        <div id="dash-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem"></div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-info-circle"></i> Guide rapide</div>
+          <div style="font-size:.75rem;color:var(--dim);line-height:2.2">
+            <div>1. <strong style="color:var(--green)">Profil &amp; Photo</strong> → ajoute ta photo et personnalise le Hero</div>
+            <div>2. <strong style="color:var(--green)">À Propos</strong> → rédige tes textes et ajoute des photos</div>
+            <div>3. <strong style="color:var(--green)">Compétences</strong> → ajuste les niveaux</div>
+            <div>4. <strong style="color:var(--green)">Expérience</strong> → ajoute stages et formations</div>
+            <div>5. <strong style="color:var(--green)">Projets</strong> → crée tes projets avec galerie pas à pas</div>
+            <div>6. Clique <strong style="color:var(--cyan)">"Voir le portfolio"</strong> pour voir le résultat en direct</div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:0">
+          <div class="card-title"><i class="fas fa-sync"></i> Forcer la synchronisation</div>
+          <div style="font-size:.72rem;color:var(--dim);margin-bottom:.8rem">Si le portfolio ne se met pas à jour, clique ici pour forcer la synchro.</div>
+          <button class="btn" onclick="forceSync()"><i class="fas fa-sync"></i> Synchroniser maintenant</button>
+          <div class="msg msg-ok" id="syncMsg"><i class="fas fa-check"></i> Portfolio synchronisé !</div>
+        </div>
+      </div>
+
+      <!-- PROFIL -->
+      <div class="asec" id="sec-profil">
+        <div class="sec-title"><i class="fas fa-user-circle"></i> Profil &amp; Photo</div>
+        <div class="sec-sub">Informations du Hero et photo de profil.</div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-camera"></i> Photo de profil</div>
+          <div class="img-drop" onclick="document.getElementById('photoFileInput').click()">
+            <i class="fas fa-user-secret"></i><span>Clique pour uploader ta photo (JPG, PNG)</span>
+          </div>
+          <input type="file" id="photoFileInput" accept="image/*" style="display:none"/>
+          <img id="photoPreview"/>
+          <div id="photoSizeInfo"></div>
+          <div style="font-size:.65rem;color:var(--dim);margin-top:1rem">// Ou colle une URL directe (recommandé) :</div>
+          <div style="display:flex;gap:.5rem;margin-top:.4rem">
+            <input type="url" id="photoUrl" placeholder="https://i.ibb.co/xxxx/photo.jpg"/>
+            <button class="btn btn-sm" onclick="applyPhotoUrl()"><i class="fas fa-link"></i> OK</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-id-card"></i> Informations Hero</div>
+          <div class="row">
+            <div class="fg"><label>Nom (affiché en grand)</label><input id="pNom"/></div>
+            <div class="fg"><label>Prénom</label><input id="pPrenom"/></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label>Titre / Métier</label><input id="pTitre"/></div>
+            <div class="fg"><label>Localisation</label><input id="pLoc"/></div>
+          </div>
+          <div class="fg"><label>Accroche</label><textarea id="pAccroche" style="min-height:60px"></textarea></div>
+          <button class="btn" onclick="saveProfil()"><i class="fas fa-save"></i> Enregistrer le profil</button>
+          <div class="msg msg-ok" id="profilMsg"><i class="fas fa-check"></i> Profil enregistré !</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-address-card"></i> Informations de contact</div>
+          <div class="row">
+            <div class="fg"><label>Nom complet</label><input id="iNom"/></div>
+            <div class="fg"><label>Email</label><input id="iEmail" type="email"/></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label>Téléphone</label><input id="iTel"/></div>
+            <div class="fg"><label>Localisation</label><input id="iLoc"/></div>
+          </div>
+          <div class="row">
+            <div class="fg"><label>Formation / École</label><input id="iFormation"/></div>
+            <div class="fg"><label>Spécialité</label><input id="iSpecialite"/></div>
+          </div>
+          <button class="btn" onclick="saveInfos()"><i class="fas fa-save"></i> Enregistrer</button>
+          <div class="msg msg-ok" id="infosMsg"><i class="fas fa-check"></i> Contact enregistré !</div>
+        </div>
+      </div>
+
+      <!-- À PROPOS -->
+      <div class="asec" id="sec-apropos">
+        <div class="sec-title"><i class="fas fa-user-shield"></i> À Propos</div>
+        <div class="sec-sub">Paragraphes et photos illustrant ton parcours.</div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-align-left"></i> Paragraphes</div>
+          <div id="paraContainer"></div>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem">
+            <button class="btn btn-sm btn-cyan" onclick="addPara()"><i class="fas fa-plus"></i> Ajouter</button>
+            <button class="btn" onclick="saveApropos()"><i class="fas fa-save"></i> Enregistrer</button>
+          </div>
+          <div class="msg msg-ok" id="aproposMsg"><i class="fas fa-check"></i> Enregistré !</div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-images"></i> Photos de parcours</div>
+          <div class="row">
+            <div class="fg"><label>URL de l'image</label><input id="apUrl" placeholder="https://i.ibb.co/..."/></div>
+            <div class="fg"><label>Légende</label><input id="apCap" placeholder="Mon stage chez X — 2024"/></div>
+          </div>
+          <button class="btn btn-sm btn-cyan" onclick="addApPhoto()"><i class="fas fa-plus"></i> Ajouter cette photo</button>
+          <div class="ap-grid" id="apPhotoGrid"></div>
+          <button class="btn" onclick="saveApropos()"><i class="fas fa-save"></i> Enregistrer tout</button>
+        </div>
+      </div>
+
+      <!-- COMPÉTENCES -->
+      <div class="asec" id="sec-competences">
+        <div class="sec-title"><i class="fas fa-code"></i> Compétences</div>
+        <div class="sec-sub">Modifie les niveaux de compétences.</div>
+        <div id="compEditor"></div>
+        <button class="btn" onclick="saveComp()"><i class="fas fa-save"></i> Enregistrer tout</button>
+        <div class="msg msg-ok" id="compMsg"><i class="fas fa-check"></i> Enregistré !</div>
+      </div>
+
+      <!-- CERTIFICATIONS -->
+      <div class="asec" id="sec-certifications">
+        <div class="sec-title"><i class="fas fa-certificate"></i> Certifications</div>
+        <div class="sec-sub">Ajoute tes certifications et outils maîtrisés.</div>
+        <div class="card">
+          <div id="certList"></div>
+          <hr/>
+          <div class="card-title"><i class="fas fa-plus"></i> Nouvelle certification</div>
+          <div class="row">
+            <div class="fg"><label>Nom</label><input id="nCertName" placeholder="OSCP, AWS, TryHackMe..."/></div>
+            <div class="fg"><label>Icône FA (optionnel)</label><input id="nCertIcon" placeholder="fas fa-certificate"/></div>
+          </div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-cyan btn-sm" onclick="addCert()"><i class="fas fa-plus"></i> Ajouter</button>
+            <button class="btn" onclick="saveCerts()"><i class="fas fa-save"></i> Enregistrer</button>
+          </div>
+          <div class="msg msg-ok" id="certMsg"><i class="fas fa-check"></i> Enregistré !</div>
+        </div>
+      </div>
+
+      <!-- EXPÉRIENCE -->
+      <div class="asec" id="sec-experiences">
+        <div class="sec-title"><i class="fas fa-briefcase"></i> Expérience</div>
+        <div class="sec-sub">Stages, emplois et parcours académique.</div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-briefcase"></i> Stages &amp; Emplois</div>
+          <div id="stagesList"></div>
+          <button class="btn btn-cyan btn-sm" onclick="openExpModal('stage')"><i class="fas fa-plus"></i> Ajouter</button>
+        </div>
+        <div class="card">
+          <div class="card-title"><i class="fas fa-graduation-cap"></i> Vie Académique</div>
+          <div id="acadList"></div>
+          <button class="btn btn-cyan btn-sm" onclick="openExpModal('acad')"><i class="fas fa-plus"></i> Ajouter</button>
+        </div>
+        <button class="btn" onclick="saveExp()"><i class="fas fa-save"></i> Enregistrer tout</button>
+        <div class="msg msg-ok" id="expMsg"><i class="fas fa-check"></i> Enregistré !</div>
+      </div>
+
+      <!-- PROJETS -->
+      <div class="asec" id="sec-projets">
+        <div class="sec-title"><i class="fas fa-folder-open"></i> Projets</div>
+        <div class="sec-sub">Crée et gère tes projets avec galerie pas à pas.</div>
+        <button class="btn btn-cyan" onclick="openProjModal(null)" style="margin-bottom:1.2rem"><i class="fas fa-plus"></i> Nouveau projet</button>
+        <div id="projList"></div>
+      </div>
+
+      <!-- CENTRES D'INTÉRÊT -->
+      <div class="asec" id="sec-interets">
+        <div class="sec-title"><i class="fas fa-star"></i> Centres d'intérêt</div>
+        <div class="sec-sub">Modifie ou ajoute tes centres d'intérêt.</div>
+        <div class="card">
+          <div id="interetsList"></div>
+          <hr/>
+          <div class="card-title"><i class="fas fa-plus"></i> Ajouter</div>
+          <div class="row">
+            <div class="fg"><label>Icône FA</label><input id="nIntIcon" placeholder="fas fa-robot"/></div>
+            <div class="fg"><label>Titre</label><input id="nIntTitle" placeholder="No-Code"/></div>
+          </div>
+          <div class="fg"><label>Description</label><textarea id="nIntDesc" style="min-height:55px"></textarea></div>
+          <div style="display:flex;gap:.5rem">
+            <button class="btn btn-cyan btn-sm" onclick="addInteret()"><i class="fas fa-plus"></i> Ajouter</button>
+            <button class="btn" onclick="saveInterets()"><i class="fas fa-save"></i> Enregistrer</button>
+          </div>
+          <div class="msg msg-ok" id="interetsMsg"><i class="fas fa-check"></i> Enregistré !</div>
+        </div>
+      </div>
+
+      <!-- PARAMÈTRES -->
+      <div class="asec" id="sec-settings">
+        <div class="sec-title"><i class="fas fa-cog"></i> Paramètres</div>
+        <div class="settings-grid">
+          <div class="card">
+            <div class="card-title"><i class="fas fa-key"></i> Changer le mot de passe</div>
+            <div class="fg"><label>Nouveau mot de passe</label><input type="password" id="pwd1"/></div>
+            <div class="fg"><label>Confirmer</label><input type="password" id="pwd2"/></div>
+            <button class="btn" onclick="changePwd()"><i class="fas fa-save"></i> Changer</button>
+            <div class="msg msg-ok" id="pwdMsg"><i class="fas fa-check"></i> Mot de passe modifié !</div>
+            <div class="msg msg-err" id="pwdErr"><i class="fas fa-times"></i> Les mots de passe ne correspondent pas.</div>
+          </div>
+          <div class="card">
+            <div class="card-title"><i class="fas fa-robot"></i> Webhook n8n (Avis)</div>
+            <div class="fg"><label>URL webhook n8n</label><input id="n8nUrl" placeholder="https://ton-n8n.cloud/webhook/..."/></div>
+            <button class="btn btn-cyan" onclick="saveWebhook()"><i class="fas fa-save"></i> Enregistrer</button>
+            <div class="msg msg-ok" id="webhookMsg"><i class="fas fa-check"></i> Webhook enregistré !</div>
+            <div class="info-box">
+              <strong>// Configuration n8n :</strong><br/>
+              <div class="info-step">1. Crée un compte sur <strong>app.n8n.cloud</strong></div>
+              <div class="info-step">2. Nouveau workflow → nœud <strong>Webhook</strong> → Method: POST</div>
+              <div class="info-step">3. Copie l'URL → colle-la ci-dessus</div>
+              <div class="info-step">4. Ajoute un nœud <strong>Gmail</strong> après → active le workflow</div>
+              <div class="info-step">5. Les avis arrivent dans ta boîte mail !</div>
+            </div>
+          </div>
+        </div>
+        <div class="card" style="margin-top:1rem">
+          <div class="card-title"><i class="fas fa-database"></i> Sauvegarde des données</div>
+          <div style="display:flex;gap:.8rem;flex-wrap:wrap">
+            <button class="btn" onclick="exportData()"><i class="fas fa-download"></i> Exporter (JSON)</button>
+            <button class="btn btn-cyan" onclick="document.getElementById('importFile').click()"><i class="fas fa-upload"></i> Importer (JSON)</button>
+            <button class="btn btn-red" onclick="resetData()"><i class="fas fa-trash"></i> Réinitialiser</button>
+          </div>
+          <input type="file" id="importFile" accept=".json" style="display:none"/>
+          <div style="font-size:.68rem;color:var(--dim);margin-top:.8rem">// Exporte pour sauvegarder ou transférer sur un autre appareil.</div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- EXPERIENCE MODAL -->
+<div class="modal-overlay" id="expOverlay">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title" id="expModalTitle">EXPÉRIENCE</div>
+      <button class="modal-close" onclick="closeExpModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="expType"/><input type="hidden" id="expIdx" value="-1"/>
+      <div class="fg"><label>Période</label><input id="eDate" placeholder="Jan 2024 → Juin 2024"/></div>
+      <div id="stageF">
+        <div class="fg"><label>Titre du poste / stage</label><input id="eTitle" placeholder="Stage Analyste SOC"/></div>
+        <div class="row">
+          <div class="fg"><label>Entreprise</label><input id="eCompany" placeholder="Entreprise XYZ"/></div>
+          <div class="fg"><label>Ville</label><input id="eLoc" placeholder="Paris"/></div>
+        </div>
+      </div>
+      <div id="acadF" style="display:none">
+        <div class="fg"><label>Diplôme / Formation</label><input id="eTitleAcad" placeholder="Master Cybersécurité"/></div>
+        <div class="row">
+          <div class="fg"><label>École / Université</label><input id="eInstitution" placeholder="ESAIP"/></div>
+          <div class="fg"><label>Ville</label><input id="eLocAcad" placeholder="Angers"/></div>
+        </div>
+      </div>
+      <div class="fg"><label>Description</label><textarea id="eDesc" style="min-height:90px"></textarea></div>
+      <div class="fg" id="eTagsF"><label>Tags (séparés par virgule)</label><input id="eTags" placeholder="Python, Splunk, Wireshark"/></div>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-red btn-sm" onclick="closeExpModal()"><i class="fas fa-times"></i> Annuler</button>
+      <button class="btn" onclick="saveExpEntry()"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div class="modal-overlay" id="projOverlay">
+  <div class="modal-box">
+    <div class="modal-hdr">
+      <div class="modal-title" id="projModalTitle">PROJET</div>
+      <button class="modal-close" onclick="closeProjModal()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="projId"/>
+      <div class="fg"><label>Image de couverture (URL)</label><input id="pCover" placeholder="https://i.ibb.co/..." oninput="prevCover()"/></div>
+      <img id="coverPrev" style="width:100%;height:140px;object-fit:cover;display:none;border:1px solid var(--border);margin-bottom:1rem"/>
+      <div class="row">
+        <div class="fg"><label>Nom du projet *</label><input id="pName" placeholder="Network Scanner"/></div>
+        <div class="fg"><label>Statut</label><select id="pStatus"><option value="COMPLETED">COMPLETED</option><option value="ACTIVE">ACTIVE</option><option value="IN PROGRESS">IN PROGRESS</option></select></div>
+      </div>
+      <div class="fg"><label>Description *</label><textarea id="pDesc"></textarea></div>
+      <div class="row">
+        <div class="fg"><label>Tags (virgule)</label><input id="pTags" placeholder="Python, Nmap, OSINT"/></div>
+        <div class="fg"><label>Icône FA</label><input id="pIcon" placeholder="fas fa-search"/></div>
+      </div>
+      <div class="row">
+        <div class="fg"><label>Lien GitHub</label><input id="pGithub" placeholder="https://github.com/..."/></div>
+        <div class="fg"><label>Lien Demo</label><input id="pDemo" placeholder="https://..."/></div>
+      </div>
+      <hr/>
+      <div class="card-title"><i class="fas fa-images"></i> Galerie pas à pas</div>
+      <div style="font-size:.68rem;color:var(--dim);margin-bottom:.8rem">Chaque étape = 1 image + 1 titre + 1 description.</div>
+      <div id="stepsEditor"></div>
+      <button class="btn btn-sm btn-cyan" onclick="addStep()"><i class="fas fa-plus"></i> Ajouter une étape</button>
+    </div>
+    <div class="modal-ftr">
+      <button class="btn btn-red btn-sm" onclick="closeProjModal()"><i class="fas fa-times"></i> Annuler</button>
+      <button class="btn" onclick="saveProj()"><i class="fas fa-save"></i> Enregistrer le projet</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ADMIN SCRIPT — gestion-k7x9p.html
+   ============================================================ */
+
+var DEFAULTS = {
+  password: "Admin@2025", n8n_webhook: "",
+  profile: { photo: null, name: "DJOUMESSI TATSIFANG", firstname: "Fredy Nelson", title: "Ingénieur Cybersécurité", location: "France", accroche: "" },
+  apropos: { paragraphes: ["Bonjour, je suis Fredy Nelson DJOUMESSI TATSIFANG..."], photos: [] },
+  infos: { nom: "Fredy Nelson DJOUMESSI", email: "fndjoumessi@gmail.com", tel: "+33 7 58 59 62 75", location: "France", formation: "ESAIP", specialite: "Cybersécurité" },
+  competences: [
+    { id:"s1", category:"Sécurité Offensive", icon:"fas fa-crosshairs", skills:[{name:"Pentesting",level:85},{name:"Kali Linux",level:80},{name:"CTF",level:75}] },
+    { id:"s2", category:"Cloud & DevOps", icon:"fas fa-cloud", skills:[{name:"AWS / Azure",level:70},{name:"Docker",level:65},{name:"CI/CD",level:60}] },
+    { id:"s3", category:"No-Code & Automatisation", icon:"fas fa-robot", skills:[{name:"n8n",level:90},{name:"Make",level:85},{name:"Waha",level:80}] },
+    { id:"s4", category:"Réseau & Système", icon:"fas fa-network-wired", skills:[{name:"TCP/IP",level:85},{name:"Linux / Windows",level:80},{name:"Active Directory",level:65}] }
+  ],
+  certifications: [{name:"TryHackMe",icon:"fas fa-trophy"},{name:"HackTheBox",icon:"fas fa-box"}],
+  experiences: { stages: [], academique: [] },
+  projects: [],
+  interets: [
+    {icon:"fas fa-robot",title:"No-Code & Automatisation",desc:"Création de systèmes automatisés avec n8n, Make."},
+    {icon:"fas fa-futbol",title:"Football",desc:"Passionné de football."},
+    {icon:"fas fa-plane",title:"Voyages",desc:"Explorer de nouveaux pays."},
+    {icon:"fas fa-cloud",title:"Cloud Computing",desc:"Veille sur AWS, Azure."}
+  ]
+};
+
+/* DATA */
+function getData() {
+  try {
+    var raw = localStorage.getItem('fn_portfolio_data');
+    if (!raw) return JSON.parse(JSON.stringify(DEFAULTS));
+    var stored = JSON.parse(raw);
+    var base = JSON.parse(JSON.stringify(DEFAULTS));
+    for (var k in stored) { if (stored.hasOwnProperty(k)) base[k] = stored[k]; }
+    // Assurer que le mot de passe est toujours là
+    if (!base.password) base.password = DEFAULTS.password;
+    return base;
+  } catch(e) { return JSON.parse(JSON.stringify(DEFAULTS)); }
+}
+
+function saveData(d) {
+  try {
+    d._lastUpdated = Date.now();
+    localStorage.setItem('fn_portfolio_data', JSON.stringify(d));
+    // Notifier le portfolio
+    try { localStorage.setItem('fn_sync_flag', String(Date.now())); } catch(e) {}
+    return true;
+  } catch(e) {
+    if (e.name === 'QuotaExceededError') {
+      alert('⚠️ Stockage plein ! Utilise des URLs externes (imgbb.com) pour les images au lieu d\'uploader directement.');
+    }
+    return false;
+  }
+}
+
+function showMsg(id, dur) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  el.style.display = 'flex';
+  setTimeout(function() { el.style.display = 'none'; }, dur || 2500);
+}
+
+/* ── LOGIN ── */
+var MAX_ATT = 3;
+var LOCK_DUR = 5 * 60 * 1000;
+var lockInterval = null;
+
+function getLockState() {
+  try { return JSON.parse(localStorage.getItem('fn_lock') || '{"att":0,"until":null}'); }
+  catch(e) { return { att: 0, until: null }; }
+}
+function setLockState(s) { localStorage.setItem('fn_lock', JSON.stringify(s)); }
+
+function updateDots(n) {
+  for (var i = 1; i <= 3; i++) {
+    var d = document.getElementById('d' + i);
+    if (d) d.className = 'adot' + (i <= n ? ' used' : '');
+  }
+}
+
+function showLock(until) {
+  var pwd = document.getElementById('loginPwd');
+  var btn = document.getElementById('loginBtn');
+  var panel = document.getElementById('lockPanel');
+  if (pwd) { pwd.disabled = true; pwd.value = ''; }
+  if (btn) { btn.disabled = true; btn.style.opacity = '.4'; }
+  if (panel) panel.style.display = 'flex';
+  updateDots(3);
+  if (lockInterval) clearInterval(lockInterval);
+  lockInterval = setInterval(function() {
+    var rem = until - Date.now();
+    if (rem <= 0) { clearInterval(lockInterval); resetLock(); return; }
+    var timer = document.getElementById('lockTimer');
+    if (timer) timer.textContent = Math.floor(rem / 60000) + ':' + String(Math.floor((rem % 60000) / 1000)).padStart(2, '0');
+  }, 500);
+}
+
+function resetLock() {
+  setLockState({ att: 0, until: null });
+  var pwd = document.getElementById('loginPwd');
+  var btn = document.getElementById('loginBtn');
+  var panel = document.getElementById('lockPanel');
+  if (pwd) { pwd.disabled = false; pwd.value = ''; }
+  if (btn) { btn.disabled = false; btn.style.opacity = '1'; }
+  if (panel) panel.style.display = 'none';
+  updateDots(0);
+}
+
+function doLogin() {
+  var state = getLockState();
+  if (state.until && Date.now() < state.until) { showLock(state.until); return; }
+  var pwd = document.getElementById('loginPwd');
+  if (!pwd) return;
+  var entered = pwd.value;
+  var d = getData();
+  var correct = d.password || DEFAULTS.password;
+  if (entered === correct) {
+    setLockState({ att: 0, until: null });
+    localStorage.setItem('fn_auth', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    initAdmin();
+  } else {
+    var newAtt = (state.att || 0) + 1;
+    var errEl = document.getElementById('loginErr');
+    var errTxt = document.getElementById('loginErrTxt');
+    if (newAtt >= MAX_ATT) {
+      var lockUntil = Date.now() + LOCK_DUR;
+      setLockState({ att: newAtt, until: lockUntil });
+      showLock(lockUntil);
+    } else {
+      setLockState({ att: newAtt, until: null });
+      updateDots(newAtt);
+      if (errTxt) errTxt.textContent = 'Mot de passe incorrect. ' + (MAX_ATT - newAtt) + ' essai(s) restant.';
+      if (errEl) { errEl.style.display = 'flex'; setTimeout(function() { errEl.style.display = 'none'; }, 3000); }
+    }
+    pwd.value = '';
+  }
+}
+
+// Attacher les events login
+document.getElementById('loginBtn').addEventListener('click', doLogin);
+document.getElementById('loginPwd').addEventListener('keydown', function(e) { if (e.key === 'Enter') doLogin(); });
+document.getElementById('logoutBtn').addEventListener('click', function() { localStorage.removeItem('fn_auth'); location.reload(); });
+
+// Check au chargement
+(function() {
+  var state = getLockState();
+  if (state.until && Date.now() < state.until) { showLock(state.until); }
+  else if (state.until) { resetLock(); }
+  else { updateDots(state.att || 0); }
+  if (localStorage.getItem('fn_auth') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    setTimeout(initAdmin, 50);
+  }
+})();
+
+/* ── NAVIGATION ── */
+document.querySelectorAll('.alink').forEach(function(link) {
+  link.addEventListener('click', function() {
+    document.querySelectorAll('.alink').forEach(function(l) { l.classList.remove('active'); });
+    document.querySelectorAll('.asec').forEach(function(s) { s.classList.remove('active'); });
+    link.classList.add('active');
+    var sec = document.getElementById('sec-' + link.dataset.sec);
+    if (sec) { sec.classList.add('active'); loadSec(link.dataset.sec); }
+  });
+});
+
+function loadSec(s) {
+  var d = getData();
+  if (s === 'dash') loadDash(d);
+  else if (s === 'profil') loadProfil(d);
+  else if (s === 'apropos') loadApropos(d);
+  else if (s === 'competences') loadComp(d);
+  else if (s === 'certifications') loadCerts(d);
+  else if (s === 'experiences') loadExp(d);
+  else if (s === 'projets') loadProjs(d);
+  else if (s === 'interets') loadInterets(d);
+  else if (s === 'settings') loadSettings(d);
+}
+
+function initAdmin() { loadSec('dash'); }
+
+/* ── DASHBOARD ── */
+function loadDash(d) {
+  var el = document.getElementById('dash-stats');
+  var items = [
+    { icon:'fas fa-folder-open', label:'Projets', val:(d.projects||[]).length, c:'var(--green)' },
+    { icon:'fas fa-briefcase', label:'Stages', val:(d.experiences.stages||[]).length, c:'var(--cyan)' },
+    { icon:'fas fa-graduation-cap', label:'Formations', val:(d.experiences.academique||[]).length, c:'var(--cyan)' },
+    { icon:'fas fa-certificate', label:'Certifications', val:(d.certifications||[]).length, c:'var(--green)' }
+  ];
+  el.innerHTML = items.map(function(it) {
+    return '<div style="background:var(--card);border:1px solid var(--border);padding:1.2rem;text-align:center"><i class="' + it.icon + '" style="font-size:1.5rem;color:' + it.c + ';display:block;margin-bottom:.5rem"></i><div style="font-family:var(--title);font-size:1.5rem;color:' + it.c + '">' + it.val + '</div><div style="font-size:.65rem;color:var(--dim);letter-spacing:2px;margin-top:3px">' + it.label + '</div></div>';
+  }).join('');
+}
+
+function forceSync() {
+  var d = getData();
+  saveData(d);
+  showMsg('syncMsg');
+}
+
+/* ── PROFIL ── */
+function loadProfil(d) {
+  var p = d.profile, inf = d.infos;
+  function sv(id, val) { var el = document.getElementById(id); if (el) el.value = val || ''; }
+  sv('pNom', p.name); sv('pPrenom', p.firstname); sv('pTitre', p.title); sv('pLoc', p.location); sv('pAccroche', p.accroche);
+  sv('iNom', inf.nom); sv('iEmail', inf.email); sv('iTel', inf.tel); sv('iLoc', inf.location); sv('iFormation', inf.formation); sv('iSpecialite', inf.specialite);
+  var prev = document.getElementById('photoPreview');
+  if (prev && p.photo) { prev.src = p.photo; prev.style.display = 'block'; }
+  // Photo upload event
+  var fileInput = document.getElementById('photoFileInput');
+  if (fileInput && !fileInput._bound) {
+    fileInput._bound = true;
+    fileInput.addEventListener('change', function() {
+      var file = fileInput.files[0]; if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var img = new Image();
+        img.onload = function() {
+          var canvas = document.createElement('canvas');
+          var MAX = 450; var w = img.width, h = img.height;
+          if (w > MAX) { h = Math.round(h * MAX / w); w = MAX; }
+          if (h > MAX) { w = Math.round(w * MAX / h); h = MAX; }
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+          var compressed = canvas.toDataURL('image/jpeg', 0.75);
+          var sizeKB = Math.round(compressed.length * 0.75 / 1024);
+          var prev = document.getElementById('photoPreview');
+          var info = document.getElementById('photoSizeInfo');
+          if (prev) { prev.src = compressed; prev.style.display = 'block'; }
+          if (info) info.textContent = '// ' + sizeKB + ' KB (' + w + 'x' + h + 'px)';
+          var d = getData(); d.profile.photo = compressed;
+          saveData(d);
+          showMsg('profilMsg');
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+}
+
+function applyPhotoUrl() {
+  var url = (document.getElementById('photoUrl') || {}).value;
+  if (!url || !url.trim()) return;
+  url = url.trim();
+  var prev = document.getElementById('photoPreview');
+  if (prev) { prev.src = url; prev.style.display = 'block'; }
+  var d = getData(); d.profile.photo = url;
+  saveData(d);
+  showMsg('profilMsg');
+}
+
+function saveProfil() {
+  var d = getData();
+  function gv(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+  d.profile.name = gv('pNom'); d.profile.firstname = gv('pPrenom'); d.profile.title = gv('pTitre'); d.profile.location = gv('pLoc'); d.profile.accroche = gv('pAccroche');
+  saveData(d); showMsg('profilMsg');
+}
+
+function saveInfos() {
+  var d = getData();
+  function gv(id) { var el = document.getElementById(id); return el ? el.value : ''; }
+  d.infos.nom = gv('iNom'); d.infos.email = gv('iEmail'); d.infos.tel = gv('iTel'); d.infos.location = gv('iLoc'); d.infos.formation = gv('iFormation'); d.infos.specialite = gv('iSpecialite');
+  saveData(d); showMsg('infosMsg');
+}
+
+/* ── À PROPOS ── */
+function loadApropos(d) {
+  renderParas(d.apropos.paragraphes || []);
+  renderApPhotos(d.apropos.photos || []);
+}
+function renderParas(paras) {
+  var c = document.getElementById('paraContainer');
+  if (!c) return;
+  c.innerHTML = paras.map(function(p, i) {
+    return '<div style="display:flex;gap:.5rem;align-items:flex-start;margin-bottom:.8rem"><textarea id="para_' + i + '" style="flex:1;min-height:65px">' + p + '</textarea><button class="btn btn-red btn-sm" onclick="delPara(' + i + ')"><i class="fas fa-trash"></i></button></div>';
+  }).join('');
+}
+function addPara() { var d = getData(); d.apropos.paragraphes.push('Nouveau paragraphe...'); saveData(d); renderParas(d.apropos.paragraphes); }
+function delPara(i) { var d = getData(); d.apropos.paragraphes.splice(i, 1); saveData(d); renderParas(d.apropos.paragraphes); }
+function addApPhoto() {
+  var url = (document.getElementById('apUrl') || {}).value; if (!url || !url.trim()) return;
+  var cap = (document.getElementById('apCap') || {}).value;
+  var d = getData(); if (!d.apropos.photos) d.apropos.photos = [];
+  d.apropos.photos.push({ src: url.trim(), caption: cap });
+  saveData(d); renderApPhotos(d.apropos.photos);
+  document.getElementById('apUrl').value = ''; document.getElementById('apCap').value = '';
+}
+function renderApPhotos(photos) {
+  var g = document.getElementById('apPhotoGrid'); if (!g) return;
+  g.innerHTML = photos.map(function(ph, i) {
+    return '<div class="ap-item"><img src="' + ph.src + '" onerror="this.style.display=\'none\'"/><div class="ap-item-cap">' + (ph.caption || '') + '</div><button class="ap-del" onclick="delApPhoto(' + i + ')"><i class="fas fa-times"></i></button></div>';
+  }).join('');
+}
+function delApPhoto(i) { var d = getData(); d.apropos.photos.splice(i, 1); saveData(d); renderApPhotos(d.apropos.photos); }
+function saveApropos() {
+  var d = getData();
+  var paras = []; var i = 0;
+  while (document.getElementById('para_' + i)) { paras.push(document.getElementById('para_' + i).value); i++; }
+  d.apropos.paragraphes = paras;
+  saveData(d); showMsg('aproposMsg');
+}
+
+/* ── COMPÉTENCES ── */
+function loadComp(d) {
+  var el = document.getElementById('compEditor'); if (!el) return;
+  el.innerHTML = (d.competences || []).map(function(cat, ci) {
+    return '<div class="card"><div class="card-title"><i class="' + cat.icon + '"></i> <input id="cname_' + ci + '" value="' + cat.category + '" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--cyan);font-size:.78rem;width:auto;padding:.2rem"/></div>' +
+      '<div id="skills_' + ci + '">' + (cat.skills || []).map(function(s, si) {
+        return '<div class="skill-edit-row"><input id="sn_' + ci + '_' + si + '" value="' + s.name + '" placeholder="Compétence"/>' +
+          '<input type="range" min="0" max="100" value="' + s.level + '" id="sl_' + ci + '_' + si + '" oninput="document.getElementById(\'sv_' + ci + '_' + si + '\').textContent=this.value+\'%\'"/>' +
+          '<span class="slevel" id="sv_' + ci + '_' + si + '">' + s.level + '%</span>' +
+          '<button class="btn btn-red btn-sm" onclick="delSkill(' + ci + ',' + si + ')"><i class="fas fa-times"></i></button></div>';
+      }).join('') + '</div>' +
+      '<button class="btn btn-sm btn-cyan" style="margin-top:.5rem" onclick="addSkill(' + ci + ')"><i class="fas fa-plus"></i> Compétence</button></div>';
+  }).join('');
+}
+function addSkill(ci) { var d = getData(); d.competences[ci].skills.push({ name: 'Nouvelle', level: 50 }); saveData(d); loadComp(d); }
+function delSkill(ci, si) { var d = getData(); d.competences[ci].skills.splice(si, 1); saveData(d); loadComp(d); }
+function saveComp() {
+  var d = getData();
+  d.competences.forEach(function(cat, ci) {
+    var cn = document.getElementById('cname_' + ci); if (cn) cat.category = cn.value;
+    cat.skills.forEach(function(s, si) {
+      var n = document.getElementById('sn_' + ci + '_' + si); if (n) s.name = n.value;
+      var l = document.getElementById('sl_' + ci + '_' + si); if (l) s.level = parseInt(l.value);
+    });
+  });
+  saveData(d); showMsg('compMsg');
+}
+
+/* ── CERTIFICATIONS ── */
+function loadCerts(d) {
+  var el = document.getElementById('certList'); if (!el) return;
+  var certs = d.certifications || [];
+  el.innerHTML = certs.length ? certs.map(function(c, i) {
+    return '<div class="list-item"><i class="' + (c.icon || 'fas fa-certificate') + '" style="color:var(--cyan)"></i><div class="list-item-info"><div class="list-item-name">' + c.name + '</div></div><button class="btn btn-red btn-sm" onclick="delCert(' + i + ')"><i class="fas fa-trash"></i></button></div>';
+  }).join('') : '<div class="no-item">Aucune certification.</div>';
+}
+function addCert() {
+  var name = (document.getElementById('nCertName') || {}).value; if (!name || !name.trim()) return;
+  var icon = (document.getElementById('nCertIcon') || {}).value || 'fas fa-certificate';
+  var d = getData(); d.certifications.push({ name: name.trim(), icon: icon.trim() }); saveData(d); loadCerts(d);
+  document.getElementById('nCertName').value = ''; document.getElementById('nCertIcon').value = '';
+}
+function delCert(i) { var d = getData(); d.certifications.splice(i, 1); saveData(d); loadCerts(d); }
+function saveCerts() { showMsg('certMsg'); }
+
+/* ── EXPÉRIENCES ── */
+var expType = 'stage';
+function loadExp(d) {
+  var sl = document.getElementById('stagesList');
+  var al = document.getElementById('acadList');
+  var noS = '<div class="no-item">Aucun stage. Clique sur Ajouter.</div>';
+  var noA = '<div class="no-item">Aucune formation. Clique sur Ajouter.</div>';
+  if (sl) sl.innerHTML = (d.experiences.stages || []).length ? d.experiences.stages.map(function(e, i) {
+    return '<div class="list-item"><div class="list-item-info"><div class="list-item-name">' + e.title + '</div><div class="list-item-sub">' + e.date + ' · ' + e.company + '</div></div><div class="list-item-actions"><button class="btn btn-sm btn-cyan" onclick="openExpModal(\'stage\',' + i + ')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-red" onclick="delExp(\'stage\',' + i + ')"><i class="fas fa-trash"></i></button></div></div>';
+  }).join('') : noS;
+  if (al) al.innerHTML = (d.experiences.academique || []).length ? d.experiences.academique.map(function(e, i) {
+    return '<div class="list-item"><div class="list-item-info"><div class="list-item-name">' + e.title + '</div><div class="list-item-sub">' + e.date + ' · ' + e.institution + '</div></div><div class="list-item-actions"><button class="btn btn-sm btn-cyan" onclick="openExpModal(\'acad\',' + i + ')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-red" onclick="delExp(\'acad\',' + i + ')"><i class="fas fa-trash"></i></button></div></div>';
+  }).join('') : noA;
+}
+function openExpModal(type, idx) {
+  expType = type;
+  var isAcad = type === 'acad';
+  document.getElementById('expType').value = type;
+  document.getElementById('expIdx').value = idx !== undefined ? idx : -1;
+  document.getElementById('expModalTitle').textContent = isAcad ? 'FORMATION ACADÉMIQUE' : 'STAGE / EMPLOI';
+  document.getElementById('stageF').style.display = isAcad ? 'none' : 'block';
+  document.getElementById('acadF').style.display = isAcad ? 'block' : 'none';
+  document.getElementById('eTagsF').style.display = isAcad ? 'none' : 'block';
+  ['eDate','eTitle','eCompany','eLoc','eTitleAcad','eInstitution','eLocAcad','eDesc','eTags'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+  if (idx !== undefined && idx >= 0) {
+    var d = getData();
+    var list = isAcad ? d.experiences.academique : d.experiences.stages;
+    var e = list[idx];
+    if (e) {
+      document.getElementById('eDate').value = e.date || '';
+      document.getElementById('eDesc').value = e.description || '';
+      if (!isAcad) { document.getElementById('eTitle').value = e.title || ''; document.getElementById('eCompany').value = e.company || ''; document.getElementById('eLoc').value = e.location || ''; document.getElementById('eTags').value = (e.tags || []).join(', '); }
+      else { document.getElementById('eTitleAcad').value = e.title || ''; document.getElementById('eInstitution').value = e.institution || ''; document.getElementById('eLocAcad').value = e.location || ''; }
+    }
+  }
+  document.getElementById('expOverlay').classList.add('open');
+}
+function closeExpModal() { document.getElementById('expOverlay').classList.remove('open'); }
+function saveExpEntry() {
+  var d = getData();
+  var isAcad = document.getElementById('expType').value === 'acad';
+  var idx = parseInt(document.getElementById('expIdx').value);
+  var gv = function(id) { var el = document.getElementById(id); return el ? el.value : ''; };
+  var entry = { date: gv('eDate'), description: gv('eDesc') };
+  if (!isAcad) { entry.title = gv('eTitle'); entry.company = gv('eCompany'); entry.location = gv('eLoc'); entry.tags = gv('eTags').split(',').map(function(t) { return t.trim(); }).filter(Boolean); }
+  else { entry.title = gv('eTitleAcad'); entry.institution = gv('eInstitution'); entry.location = gv('eLocAcad'); }
+  var list = isAcad ? d.experiences.academique : d.experiences.stages;
+  if (idx >= 0) list[idx] = entry; else list.unshift(entry);
+  saveData(d); closeExpModal(); loadExp(d);
+}
+function delExp(type, i) { var d = getData(); (type === 'acad' ? d.experiences.academique : d.experiences.stages).splice(i, 1); saveData(d); loadExp(d); }
+function saveExp() { showMsg('expMsg'); }
+
+/* ── PROJETS ── */
+var editSteps = [];
+function loadProjs(d) {
+  var el = document.getElementById('projList'); if (!el) return;
+  el.innerHTML = (d.projects || []).length ? d.projects.map(function(p, i) {
+    return '<div class="list-item">' +
+      (p.cover ? '<img src="' + p.cover + '" style="width:50px;height:50px;object-fit:cover;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\'"/>' : '<div style="width:50px;height:50px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);color:var(--green3);flex-shrink:0"><i class="' + (p.icon || 'fas fa-code') + '"></i></div>') +
+      '<div class="list-item-info"><div class="list-item-name">' + p.name + '</div><div class="list-item-sub">' + (p.tags || []).join(' · ') + ' · ' + (p.steps || []).length + ' étape(s)</div></div>' +
+      '<span class="badge ' + (p.status === 'ACTIVE' ? 'badge-r' : 'badge-g') + '" style="flex-shrink:0">' + (p.status || 'COMPLETED') + '</span>' +
+      '<div class="list-item-actions"><button class="btn btn-sm btn-cyan" onclick="openProjModal(\'' + p.id + '\')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-red" onclick="delProj(\'' + p.id + '\')"><i class="fas fa-trash"></i></button></div></div>';
+  }).join('') : '<div class="no-item"><i class="fas fa-folder-open" style="font-size:1.5rem;display:block;margin-bottom:.5rem;color:var(--green3)"></i>Aucun projet. Clique "Nouveau projet".</div>';
+}
+function openProjModal(id) {
+  var d = getData();
+  var proj = id ? d.projects.find(function(p) { return p.id === id; }) : null;
+  document.getElementById('projModalTitle').textContent = proj ? 'MODIFIER : ' + proj.name : 'NOUVEAU PROJET';
+  document.getElementById('projId').value = proj ? proj.id : '';
+  document.getElementById('pName').value = proj ? proj.name : '';
+  document.getElementById('pDesc').value = proj ? proj.description : '';
+  document.getElementById('pStatus').value = proj ? (proj.status || 'COMPLETED') : 'COMPLETED';
+  document.getElementById('pTags').value = proj ? (proj.tags || []).join(', ') : '';
+  document.getElementById('pIcon').value = proj ? (proj.icon || '') : 'fas fa-code';
+  document.getElementById('pGithub').value = proj ? (proj.github || '') : '';
+  document.getElementById('pDemo').value = proj ? (proj.demo || '') : '';
+  document.getElementById('pCover').value = proj ? (proj.cover || '') : '';
+  var cp = document.getElementById('coverPrev');
+  if (proj && proj.cover) { cp.src = proj.cover; cp.style.display = 'block'; } else { cp.style.display = 'none'; }
+  editSteps = proj ? JSON.parse(JSON.stringify(proj.steps || [])) : [];
+  renderStepsEditor();
+  document.getElementById('projOverlay').classList.add('open');
+}
+function closeProjModal() { document.getElementById('projOverlay').classList.remove('open'); }
+function prevCover() { var url = document.getElementById('pCover').value; var cp = document.getElementById('coverPrev'); if (url) { cp.src = url; cp.style.display = 'block'; } else { cp.style.display = 'none'; } }
+function addStep() { editSteps.push({ image: '', title: '', caption: '' }); renderStepsEditor(); }
+function delStep(i) { editSteps.splice(i, 1); renderStepsEditor(); }
+function renderStepsEditor() {
+  var el = document.getElementById('stepsEditor'); if (!el) return;
+  if (!editSteps.length) { el.innerHTML = '<div class="no-item" style="margin-bottom:.8rem">Aucune étape. Clique "Ajouter une étape".</div>'; return; }
+  el.innerHTML = editSteps.map(function(s, i) {
+    return '<div class="step-edit">' +
+      '<div class="step-head"><span class="step-num">ÉTAPE ' + (i + 1) + '</span><button class="btn btn-red btn-sm" onclick="delStep(' + i + ')"><i class="fas fa-times"></i></button></div>' +
+      (s.image ? '<img src="' + s.image + '" class="step-preview" onerror="this.style.display=\'none\'"/>' : '') +
+      '<div class="fg"><label>URL image</label><input id="si_' + i + '" value="' + (s.image || '') + '" placeholder="https://i.ibb.co/..." oninput="editSteps[' + i + '].image=this.value;renderStepsEditor()"/></div>' +
+      '<div class="fg"><label>Titre</label><input id="st_' + i + '" value="' + (s.title || '') + '" placeholder="Analyse réseau" oninput="editSteps[' + i + '].title=this.value"/></div>' +
+      '<div class="fg"><label>Description</label><textarea id="sc_' + i + '" style="min-height:55px" oninput="editSteps[' + i + '].caption=this.value">' + (s.caption || '') + '</textarea></div>' +
+      '</div>';
+  }).join('');
+}
+function saveProj() {
+  var d = getData();
+  // Sync champs steps
+  editSteps.forEach(function(s, i) {
+    var t = document.getElementById('st_' + i); if (t) s.title = t.value;
+    var c = document.getElementById('sc_' + i); if (c) s.caption = c.value;
+  });
+  var id = document.getElementById('projId').value || ('proj_' + Date.now());
+  var gv = function(x) { var el = document.getElementById(x); return el ? el.value : ''; };
+  var proj = {
+    id: id, name: gv('pName'), description: gv('pDesc'), status: gv('pStatus'),
+    tags: gv('pTags').split(',').map(function(t) { return t.trim(); }).filter(Boolean),
+    icon: gv('pIcon') || 'fas fa-code', github: gv('pGithub'), demo: gv('pDemo'), cover: gv('pCover'),
+    steps: JSON.parse(JSON.stringify(editSteps))
+  };
+  var idx = d.projects.findIndex(function(p) { return p.id === id; });
+  if (idx >= 0) d.projects[idx] = proj; else d.projects.push(proj);
+  saveData(d); closeProjModal(); loadProjs(d);
+}
+function delProj(id) { if (!confirm('Supprimer ce projet ?')) return; var d = getData(); d.projects = d.projects.filter(function(p) { return p.id !== id; }); saveData(d); loadProjs(d); }
+
+/* ── CENTRES D'INTÉRÊT ── */
+function loadInterets(d) {
+  var el = document.getElementById('interetsList'); if (!el) return;
+  el.innerHTML = (d.interets || []).map(function(it, i) {
+    return '<div class="list-item"><i class="' + it.icon + '" style="color:var(--green3)"></i><div class="list-item-info"><div class="list-item-name">' + it.title + '</div><div class="list-item-sub">' + it.desc.slice(0, 50) + '...</div></div><button class="btn btn-red btn-sm" onclick="delInteret(' + i + ')"><i class="fas fa-trash"></i></button></div>';
+  }).join('') || '<div class="no-item">Aucun centre d\'intérêt.</div>';
+}
+function addInteret() {
+  var icon = (document.getElementById('nIntIcon') || {}).value || 'fas fa-star';
+  var title = (document.getElementById('nIntTitle') || {}).value; if (!title || !title.trim()) return;
+  var desc = (document.getElementById('nIntDesc') || {}).value;
+  var d = getData(); d.interets.push({ icon: icon.trim(), title: title.trim(), desc: desc }); saveData(d); loadInterets(d);
+  ['nIntIcon','nIntTitle','nIntDesc'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
+}
+function delInteret(i) { var d = getData(); d.interets.splice(i, 1); saveData(d); loadInterets(d); }
+function saveInterets() { showMsg('interetsMsg'); }
+
+/* ── PARAMÈTRES ── */
+function loadSettings(d) {
+  var el = document.getElementById('n8nUrl'); if (el) el.value = d.n8n_webhook || '';
+}
+function changePwd() {
+  var p1 = (document.getElementById('pwd1') || {}).value;
+  var p2 = (document.getElementById('pwd2') || {}).value;
+  if (!p1 || p1 !== p2) { showMsg('pwdErr'); return; }
+  var d = getData(); d.password = p1; saveData(d); showMsg('pwdMsg');
+  document.getElementById('pwd1').value = ''; document.getElementById('pwd2').value = '';
+}
+function saveWebhook() {
+  var d = getData(); var el = document.getElementById('n8nUrl');
+  d.n8n_webhook = el ? el.value.trim() : ''; saveData(d); showMsg('webhookMsg');
+}
+function exportData() {
+  var d = getData();
+  var blob = new Blob([JSON.stringify(d, null, 2)], { type: 'application/json' });
+  var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'fn_portfolio.json'; a.click();
+}
+function resetData() {
+  if (!confirm('Réinitialiser toutes les données ?')) return;
+  localStorage.removeItem('fn_portfolio_data'); localStorage.removeItem('fn_auth'); location.reload();
+}
+document.getElementById('importFile').addEventListener('change', function() {
+  var file = this.files[0]; if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try { var d = JSON.parse(e.target.result); saveData(d); alert('✓ Importé !'); location.reload(); }
+    catch(err) { alert('Fichier JSON invalide.'); }
+  };
+  reader.readAsText(file);
+});
+</script>
+</body>
+</html>
