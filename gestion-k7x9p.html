@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>[FN_SEC] Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<style>
+:root{--bg:#050908;--card:#0d1a10;--green:#00ff41;--green2:#00cc33;--green3:#009922;--cyan:#00ffff;--red:#ff3b3b;--border:rgba(0,255,65,.18);--border2:rgba(0,255,65,.35);--text:#b0ffbe;--dim:#4a8a5a;--f:'Share Tech Mono',monospace;--t:'Orbitron',monospace}
+*{box-sizing:border-box;margin:0;padding:0}body{background:var(--bg);color:var(--text);font-family:var(--f);min-height:100vh}a{text-decoration:none;color:inherit}
+input,textarea,select{background:rgba(0,0,0,.5);border:1px solid var(--border);color:var(--green);font-family:var(--f);font-size:.78rem;padding:.55rem .85rem;outline:none;width:100%;transition:border-color .3s}
+input:focus,textarea:focus,select:focus{border-color:var(--green)}
+input::placeholder,textarea::placeholder{color:var(--dim);opacity:.5}
+textarea{resize:vertical;min-height:75px}label{font-size:.63rem;color:var(--dim);letter-spacing:2px;display:block;margin-bottom:.3rem}.fg{margin-bottom:.9rem}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:.9rem}button{cursor:pointer;font-family:var(--f)}
+.btn{border:1px solid var(--green);color:var(--green);background:transparent;font-size:.73rem;padding:.55rem 1.1rem;letter-spacing:2px;transition:all .3s;display:inline-flex;align-items:center;gap:.4rem}
+.btn:hover{background:rgba(0,255,65,.1)}.btn-r{border-color:var(--red);color:var(--red)}.btn-r:hover{background:rgba(255,59,59,.1)}
+.btn-c{border-color:var(--cyan);color:var(--cyan)}.btn-c:hover{background:rgba(0,255,255,.1)}.btn-sm{padding:.3rem .75rem;font-size:.66rem}
+hr{border:none;border-top:1px solid var(--border);margin:1rem 0}
+.msg{padding:.6rem .9rem;font-size:.73rem;margin-top:.7rem;display:none;align-items:center;gap:.4rem;border-radius:2px}
+.ok{border:1px solid var(--green2);color:var(--green);background:rgba(0,255,65,.05)}.er{border:1px solid var(--red);color:var(--red);background:rgba(255,59,59,.05)}
+/* LOGIN */
+#ls{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:var(--bg);z-index:9999}
+.lb{border:1px solid var(--border2);padding:2.5rem;width:360px;text-align:center;box-shadow:0 0 40px rgba(0,255,65,.1)}
+.ll{font-family:var(--t);font-size:1.1rem;color:var(--green);letter-spacing:3px;margin-bottom:.4rem;text-shadow:0 0 20px rgba(0,255,65,.4)}
+.ls2{font-size:.65rem;color:var(--dim);letter-spacing:2px;margin-bottom:1.2rem}
+.ad-bar{display:flex;gap:.4rem;justify-content:center;margin-bottom:1rem}
+.adot{width:11px;height:11px;border:1px solid var(--border2)}.adot.u{background:var(--red);border-color:var(--red)}
+#lpwd{text-align:center;margin-bottom:.7rem;letter-spacing:4px}
+#lerr{font-size:.7rem;color:var(--red);margin-top:.4rem;display:none;justify-content:center;align-items:center;gap:.3rem}
+.lp{border:1px solid var(--red);padding:1rem;margin-top:.8rem;display:none;flex-direction:column;align-items:center;gap:.4rem;background:rgba(255,59,59,.05)}
+.lt{font-family:var(--t);font-size:1.7rem;color:var(--red)}.ls3{font-size:.6rem;color:var(--dim);text-align:center}
+/* LAYOUT */
+#dsh{display:none;min-height:100vh}
+.ah{height:55px;background:rgba(5,9,8,.95);border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;padding:0 1.4rem;position:sticky;top:0;z-index:100}
+.al{font-family:var(--t);font-size:.85rem;color:var(--green);letter-spacing:2px}
+.ar{display:flex;align-items:center;gap:.9rem;font-size:.7rem}
+.hl{color:var(--cyan);display:flex;align-items:center;gap:.3rem;transition:color .3s}.hl:hover{color:var(--green)}
+/* SYNC STATUS BAR */
+.sbar{background:rgba(0,0,0,.3);border-bottom:1px solid var(--border);padding:.4rem 1.4rem;display:flex;align-items:center;gap:1rem;font-size:.65rem;color:var(--dim)}
+.sbar-dot{width:7px;height:7px;border-radius:50%;margin-right:3px;display:inline-block}
+.sbar-dot.ok{background:var(--green);box-shadow:0 0 6px var(--green)}.sbar-dot.err{background:var(--red)}.sbar-dot.wait{background:var(--cyan);animation:pulse2 1s infinite}
+@keyframes pulse2{0%,100%{opacity:1}50%{opacity:.3}}
+.lay{display:flex;min-height:calc(100vh - 55px)}
+.sb{width:205px;background:rgba(0,0,0,.4);border-right:1px solid var(--border);flex-shrink:0;display:flex;flex-direction:column}
+.nav2{display:flex;flex-direction:column;padding:.8rem 0;flex:1}
+.al2{display:flex;align-items:center;gap:.7rem;padding:.75rem 1.1rem;font-size:.71rem;color:var(--dim);letter-spacing:1px;border-left:3px solid transparent;transition:all .3s;cursor:pointer}
+.al2 i{width:15px;color:var(--green3);font-size:.82rem}
+.al2:hover,.al2.a{color:var(--green);border-left-color:var(--green);background:rgba(0,255,65,.05)}
+.al2:hover i,.al2.a i{color:var(--green)}
+.am{flex:1;padding:1.8rem;overflow-y:auto;max-height:calc(100vh - 85px)}
+.sec{display:none}.sec.a{display:block}
+.st{font-family:var(--t);font-size:.95rem;color:var(--green);letter-spacing:3px;margin-bottom:.35rem;padding-bottom:.65rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.65rem}
+.st i{color:var(--cyan);font-size:.88rem}.ss{font-size:.68rem;color:var(--dim);margin-bottom:1.3rem;letter-spacing:1px}
+.card{background:var(--card);border:1px solid var(--border);padding:1.4rem;margin-bottom:.9rem}
+.ct{font-size:.76rem;color:var(--cyan);letter-spacing:2px;margin-bottom:.9rem;display:flex;align-items:center;gap:.45rem}.ct i{color:var(--green3)}
+.ni{font-size:.73rem;color:var(--dim);text-align:center;padding:1.3rem;border:1px dashed var(--border)}
+.li{border:1px solid var(--border);padding:.75rem .95rem;margin-bottom:.45rem;display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.2);gap:.7rem}
+.ln{font-size:.78rem;color:var(--green);margin-bottom:.2rem}.ls4{font-size:.62rem;color:var(--dim)}
+.la{display:flex;gap:.35rem;flex-shrink:0}
+.se{border:1px solid var(--border);padding:.9rem;margin-bottom:.7rem;background:rgba(0,0,0,.2)}
+.sh{display:flex;align-items:center;justify-content:space-between;margin-bottom:.7rem}.sn{font-size:.68rem;color:var(--cyan);letter-spacing:2px}
+.sp{width:100%;height:95px;object-fit:cover;display:block;border:1px solid var(--border);margin-bottom:.4rem}
+.sk{display:grid;grid-template-columns:1fr auto auto auto;gap:.45rem;align-items:center;margin-bottom:.45rem}
+.sk input[type=range]{accent-color:var(--green);padding:0}
+.slv{font-size:.68rem;color:var(--cyan);width:33px;text-align:right}
+.id{border:2px dashed var(--border2);padding:1.3rem;text-align:center;cursor:pointer;transition:all .3s}
+.id:hover{border-color:var(--green);background:rgba(0,255,65,.03)}
+.id i{font-size:1.7rem;color:var(--green3);display:block;margin-bottom:.35rem}.id span{font-size:.68rem;color:var(--dim)}
+#pp{width:100%;max-height:190px;object-fit:cover;display:none;border:1px solid var(--border);margin-top:.7rem}
+#psi{font-size:.63rem;color:var(--dim);margin-top:.35rem}
+.apg{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:.65rem;margin:.9rem 0}
+.api{border:1px solid var(--border);overflow:hidden;position:relative}
+.api img{width:100%;height:95px;object-fit:cover;display:block}
+.apc{padding:.35rem;font-size:.6rem;color:var(--dim)}
+.apd{position:absolute;top:3px;right:3px;background:rgba(255,59,59,.85);border:none;color:#fff;width:20px;height:20px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:.68rem}
+.sg{display:grid;grid-template-columns:1fr 1fr;gap:1.3rem}
+.ib{background:rgba(0,255,65,.04);border:1px solid var(--border);padding:.9rem;font-size:.7rem;color:var(--dim);line-height:2;margin-top:.9rem}
+.ib strong{color:var(--cyan)}.is{margin-bottom:.35rem;padding-left:.7rem;border-left:2px solid var(--green3)}
+.bd{font-size:.58rem;border:1px solid;padding:2px 6px;letter-spacing:1px}
+.bg{border-color:var(--green2);color:var(--green2)}.br{border-color:var(--red);color:var(--red)}.bc{border-color:var(--cyan);color:var(--cyan)}
+/* GLOBAL SAVE TOAST */
+#gtoast{position:fixed;bottom:1.5rem;right:1.5rem;z-index:9000;display:none;align-items:center;gap:.6rem;background:#060d07;border:1px solid var(--green);padding:.7rem 1.2rem;font-size:.73rem;color:var(--green);box-shadow:0 0 20px rgba(0,255,65,.25)}
+@media(max-width:700px){.sb{display:none}.sg{grid-template-columns:1fr}.row{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- GLOBAL TOAST -->
+<div id="gtoast"></div>
+
+<!-- LOGIN -->
+<div id="ls">
+  <div class="lb">
+    <div class="ll">[FN_SEC]</div>
+    <div class="ls2">// INTERFACE ADMIN — ACCÈS RESTREINT</div>
+    <div class="ad-bar"><div class="adot" id="d1"></div><div class="adot" id="d2"></div><div class="adot" id="d3"></div></div>
+    <input type="password" id="lpwd" placeholder="Mot de passe" autocomplete="current-password"/>
+    <button class="btn" id="lbtn" style="width:100%;justify-content:center"><i class="fas fa-terminal"></i> CONNEXION</button>
+    <div id="lerr"><i class="fas fa-exclamation-triangle"></i> <span id="lets">Mot de passe incorrect.</span></div>
+    <div class="lp" id="lpl"><div style="font-size:.73rem;color:var(--red);letter-spacing:2px"><i class="fas fa-lock"></i> ACCÈS BLOQUÉ</div><div class="lt" id="ltm">5:00</div><div class="ls3">Réessaie dans le temps indiqué.</div></div>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dsh">
+  <header class="ah">
+    <div class="al">[FN_SEC] // ADMIN</div>
+    <div class="ar">
+      <a href="index.html" target="_blank" class="hl"><i class="fas fa-external-link-alt"></i> Voir le portfolio</a>
+      <button class="btn btn-sm" id="lout"><i class="fas fa-sign-out-alt"></i> Déconnexion</button>
+    </div>
+  </header>
+  <!-- SYNC STATUS BAR -->
+  <div class="sbar" id="sbar">
+    <span><span class="sbar-dot" id="sdot"></span> <span id="stxt">Vérification sync...</span></span>
+    <button class="btn btn-sm" onclick="syncNow()"><i class="fas fa-sync"></i> Synchroniser</button>
+    <span style="margin-left:auto;font-size:.6rem" id="slast"></span>
+  </div>
+  <div class="lay">
+    <aside class="sb">
+      <nav class="nav2">
+        <div class="al2 a" data-s="dash"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="al2" data-s="profil"><i class="fas fa-user-circle"></i> Profil &amp; Photo</div>
+        <div class="al2" data-s="apropos"><i class="fas fa-user-shield"></i> À Propos</div>
+        <div class="al2" data-s="comp"><i class="fas fa-code"></i> Compétences</div>
+        <div class="al2" data-s="certs"><i class="fas fa-certificate"></i> Certifications</div>
+        <div class="al2" data-s="exp"><i class="fas fa-briefcase"></i> Expérience</div>
+        <div class="al2" data-s="projs"><i class="fas fa-folder-open"></i> Projets</div>
+        <div class="al2" data-s="int"><i class="fas fa-star"></i> Centres d'intérêt</div>
+        <div class="al2" data-s="sett"><i class="fas fa-cog"></i> Paramètres</div>
+      </nav>
+    </aside>
+    <main class="am">
+
+      <div class="sec a" id="sec-dash">
+        <div class="st"><i class="fas fa-th-large"></i> Dashboard</div>
+        <div class="ss">Vue d'ensemble. Configure JSONBin pour synchroniser entre appareils.</div>
+        <div id="dstats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:.9rem;margin-bottom:1.3rem"></div>
+        <div class="card">
+          <div class="ct"><i class="fas fa-info-circle"></i> Guide rapide</div>
+          <div style="font-size:.73rem;color:var(--dim);line-height:2.2">
+            <div>1. <strong style="color:var(--green)">Paramètres</strong> → Configure JSONBin (sync multi-appareils)</div>
+            <div>2. <strong style="color:var(--green)">Profil &amp; Photo</strong> → Ajoute ta photo et tes infos</div>
+            <div>3. <strong style="color:var(--green)">Compétences / Certifications / Expérience</strong> → Remplis</div>
+            <div>4. <strong style="color:var(--green)">Projets</strong> → Crée tes projets avec galerie pas à pas</div>
+            <div>5. Clique <strong style="color:var(--cyan)">"Synchroniser"</strong> → vérifie sur le portfolio</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="sec" id="sec-profil">
+        <div class="st"><i class="fas fa-user-circle"></i> Profil &amp; Photo</div>
+        <div class="ss">Photo et informations du Hero.</div>
+        <div class="card">
+          <div class="ct"><i class="fas fa-camera"></i> Photo de profil</div>
+          <div class="id" onclick="document.getElementById('pfi').click()"><i class="fas fa-user-secret"></i><span>Clique pour uploader (JPG, PNG)</span></div>
+          <input type="file" id="pfi" accept="image/*" style="display:none"/>
+          <img id="pp"/>
+          <div id="psi"></div>
+          <div style="font-size:.63rem;color:var(--dim);margin-top:.9rem">// Ou URL directe (recommandé — ex: imgbb.com) :</div>
+          <div style="display:flex;gap:.45rem;margin-top:.35rem">
+            <input type="url" id="purl" placeholder="https://i.ibb.co/xxxx/photo.jpg"/>
+            <button class="btn btn-sm" onclick="applyUrl()"><i class="fas fa-check"></i></button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ct"><i class="fas fa-id-card"></i> Informations Hero</div>
+          <div class="row"><div class="fg"><label>Nom (affiché en grand)</label><input id="pn"/></div><div class="fg"><label>Prénom</label><input id="pp2"/></div></div>
+          <div class="row"><div class="fg"><label>Titre / Métier</label><input id="pt"/></div><div class="fg"><label>Localisation</label><input id="pl"/></div></div>
+          <div class="fg"><label>Accroche</label><textarea id="pa" style="min-height:55px"></textarea></div>
+          <button class="btn" onclick="saveProfil()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+          <div class="msg ok" id="pm"></div>
+        </div>
+        <div class="card">
+          <div class="ct"><i class="fas fa-address-card"></i> Informations de contact</div>
+          <div class="row"><div class="fg"><label>Nom complet</label><input id="in"/></div><div class="fg"><label>Email</label><input id="ie" type="email"/></div></div>
+          <div class="row"><div class="fg"><label>Téléphone</label><input id="it"/></div><div class="fg"><label>Localisation</label><input id="il"/></div></div>
+          <div class="row"><div class="fg"><label>Formation / École</label><input id="if"/></div><div class="fg"><label>Spécialité</label><input id="is"/></div></div>
+          <button class="btn" onclick="saveInfos()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+          <div class="msg ok" id="im"></div>
+        </div>
+      </div>
+
+      <div class="sec" id="sec-apropos">
+        <div class="st"><i class="fas fa-user-shield"></i> À Propos</div>
+        <div class="ss">Paragraphes et photos de parcours.</div>
+        <div class="card">
+          <div class="ct"><i class="fas fa-align-left"></i> Paragraphes</div>
+          <div id="parac"></div>
+          <div style="display:flex;gap:.45rem;flex-wrap:wrap;margin-top:.5rem">
+            <button class="btn btn-sm btn-c" onclick="addPara()"><i class="fas fa-plus"></i> Ajouter</button>
+            <button class="btn" onclick="saveApropos()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+          </div>
+          <div class="msg ok" id="apm"></div>
+        </div>
+        <div class="card">
+          <div class="ct"><i class="fas fa-images"></i> Photos de parcours</div>
+          <div class="row"><div class="fg"><label>URL de l'image</label><input id="apu" placeholder="https://i.ibb.co/..."/></div><div class="fg"><label>Légende</label><input id="apc" placeholder="Mon stage chez X — 2024"/></div></div>
+          <button class="btn btn-sm btn-c" onclick="addApPhoto()"><i class="fas fa-plus"></i> Ajouter cette photo</button>
+          <div class="apg" id="apg"></div>
+          <button class="btn" onclick="saveApropos()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+        </div>
+      </div>
+
+      <div class="sec" id="sec-comp">
+        <div class="st"><i class="fas fa-code"></i> Compétences</div>
+        <div class="ss">Modifie les niveaux.</div>
+        <div id="ce"></div>
+        <button class="btn" onclick="saveComp()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+        <div class="msg ok" id="cm"></div>
+      </div>
+
+      <div class="sec" id="sec-certs">
+        <div class="st"><i class="fas fa-certificate"></i> Certifications</div>
+        <div class="ss">Tes certifications et outils.</div>
+        <div class="card">
+          <div id="cl"></div><hr/>
+          <div class="ct"><i class="fas fa-plus"></i> Nouvelle certification</div>
+          <div class="row"><div class="fg"><label>Nom</label><input id="ncn" placeholder="OSCP, TryHackMe..."/></div><div class="fg"><label>Icône FA</label><input id="nci" placeholder="fas fa-certificate"/></div></div>
+          <div style="display:flex;gap:.45rem">
+            <button class="btn btn-c btn-sm" onclick="addCert()"><i class="fas fa-plus"></i> Ajouter</button>
+            <button class="btn" onclick="saveCerts()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+          </div>
+          <div class="msg ok" id="ctm"></div>
+        </div>
+      </div>
+
+      <div class="sec" id="sec-exp">
+        <div class="st"><i class="fas fa-briefcase"></i> Expérience</div>
+        <div class="ss">Stages, emplois et parcours académique.</div>
+        <div class="card"><div class="ct"><i class="fas fa-briefcase"></i> Stages &amp; Emplois</div><div id="sl2"></div><button class="btn btn-c btn-sm" onclick="openExpM('stage')"><i class="fas fa-plus"></i> Ajouter</button></div>
+        <div class="card"><div class="ct"><i class="fas fa-graduation-cap"></i> Vie Académique</div><div id="al2"></div><button class="btn btn-c btn-sm" onclick="openExpM('acad')"><i class="fas fa-plus"></i> Ajouter</button></div>
+        <button class="btn" onclick="saveExp()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+        <div class="msg ok" id="em"></div>
+      </div>
+
+      <div class="sec" id="sec-projs">
+        <div class="st"><i class="fas fa-folder-open"></i> Projets</div>
+        <div class="ss">Crée tes projets avec galerie pas à pas.</div>
+        <button class="btn btn-c" onclick="openProjM(null)" style="margin-bottom:1.1rem"><i class="fas fa-plus"></i> Nouveau projet</button>
+        <div id="pl2"></div>
+      </div>
+
+      <div class="sec" id="sec-int">
+        <div class="st"><i class="fas fa-star"></i> Centres d'intérêt</div>
+        <div class="ss">Tes passions.</div>
+        <div class="card">
+          <div id="intl"></div><hr/>
+          <div class="ct"><i class="fas fa-plus"></i> Ajouter</div>
+          <div class="row"><div class="fg"><label>Icône FA</label><input id="nii" placeholder="fas fa-robot"/></div><div class="fg"><label>Titre</label><input id="nit" placeholder="No-Code"/></div></div>
+          <div class="fg"><label>Description</label><textarea id="nid" style="min-height:50px"></textarea></div>
+          <div style="display:flex;gap:.45rem">
+            <button class="btn btn-c btn-sm" onclick="addInt()"><i class="fas fa-plus"></i> Ajouter</button>
+            <button class="btn" onclick="saveInt()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+          </div>
+          <div class="msg ok" id="intm"></div>
+        </div>
+      </div>
+
+      <div class="sec" id="sec-sett">
+        <div class="st"><i class="fas fa-cog"></i> Paramètres</div>
+        <div class="sg">
+          <div class="card">
+            <div class="ct"><i class="fas fa-cloud"></i> JSONBin.io — Sync multi-appareils</div>
+            <div style="font-size:.7rem;color:var(--dim);margin-bottom:.8rem">Configure une fois → tes données se synchronisent sur tous tes appareils.</div>
+            <div class="fg"><label>Bin ID</label><input id="jbid" placeholder="64abc123def..."/></div>
+            <div class="fg"><label>Master Key (X-Master-Key)</label><input id="jbkey" placeholder="$2a$10$..."/></div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+              <button class="btn btn-c" onclick="saveCloudCfg()"><i class="fas fa-save"></i> Enregistrer config</button>
+              <button class="btn" onclick="pushCloud()"><i class="fas fa-upload"></i> Pousser vers cloud</button>
+              <button class="btn" onclick="pullCloud()"><i class="fas fa-download"></i> Récupérer du cloud</button>
+            </div>
+            <div class="msg ok" id="ccm"></div>
+            <div class="msg er" id="cce"></div>
+            <div class="ib">
+              <strong>// Config JSONBin (5 min, gratuit) :</strong><br/>
+              <div class="is">1. Va sur <strong>jsonbin.io</strong> → crée un compte</div>
+              <div class="is">2. <strong>API Keys</strong> → copie ta <strong>Master Key</strong></div>
+              <div class="is">3. <strong>New Bin</strong> → colle <code>{}</code> → Save → copie l'ID</div>
+              <div class="is">4. Colle Bin ID + Master Key ci-dessus → Enregistrer config</div>
+              <div class="is">5. Clique <strong>"Pousser vers cloud"</strong></div>
+              <div class="is">6. Sur ton téléphone : ouvre l'admin → <strong>"Récupérer du cloud"</strong></div>
+            </div>
+          </div>
+          <div>
+            <div class="card">
+              <div class="ct"><i class="fas fa-key"></i> Mot de passe</div>
+              <div class="fg"><label>Nouveau</label><input type="password" id="pw1"/></div>
+              <div class="fg"><label>Confirmer</label><input type="password" id="pw2"/></div>
+              <button class="btn" onclick="changePwd()"><i class="fas fa-save"></i> Changer</button>
+              <div class="msg ok" id="pwm"></div><div class="msg er" id="pwe"></div>
+            </div>
+            <div class="card">
+              <div class="ct"><i class="fas fa-robot"></i> Webhook n8n (Avis)</div>
+              <div class="fg"><label>URL webhook</label><input id="n8n" placeholder="https://ton-n8n.cloud/webhook/..."/></div>
+              <button class="btn btn-c" onclick="saveWh()"><i class="fas fa-save"></i> Enregistrer</button>
+              <div class="msg ok" id="whm"></div>
+            </div>
+            <div class="card">
+              <div class="ct"><i class="fas fa-database"></i> Sauvegarde</div>
+              <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+                <button class="btn" onclick="exportD()"><i class="fas fa-download"></i> Exporter JSON</button>
+                <button class="btn btn-c" onclick="document.getElementById('impf').click()"><i class="fas fa-upload"></i> Importer JSON</button>
+                <button class="btn btn-r" onclick="resetD()"><i class="fas fa-trash"></i> Réinitialiser</button>
+              </div>
+              <input type="file" id="impf" accept=".json" style="display:none"/>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- EXPERIENCE MODAL -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .3s" id="expm">
+  <div style="background:#060d07;border:1px solid var(--border2);width:100%;max-width:680px;margin:auto;position:relative;max-height:90vh;overflow-y:auto">
+    <div style="padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#060d07;z-index:10">
+      <div style="font-family:var(--t);font-size:.87rem;color:var(--green);letter-spacing:2px" id="expt">EXPÉRIENCE</div>
+      <button style="background:transparent;border:1px solid var(--border);color:var(--dim);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s" onclick="closeExpM()" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:1.4rem">
+      <input type="hidden" id="ety"/><input type="hidden" id="eidx" value="-1"/>
+      <div class="fg"><label>Période</label><input id="ed" placeholder="Jan 2024 → Juin 2024"/></div>
+      <div id="esf">
+        <div class="fg"><label>Titre</label><input id="eti" placeholder="Stage Analyste SOC"/></div>
+        <div class="row"><div class="fg"><label>Entreprise</label><input id="eco" placeholder="Entreprise XYZ"/></div><div class="fg"><label>Ville</label><input id="elo" placeholder="Paris"/></div></div>
+      </div>
+      <div id="eaf" style="display:none">
+        <div class="fg"><label>Diplôme / Formation</label><input id="eta" placeholder="Master Cybersécurité"/></div>
+        <div class="row"><div class="fg"><label>École</label><input id="ein" placeholder="ESAIP"/></div><div class="fg"><label>Ville</label><input id="ela" placeholder="Angers"/></div></div>
+      </div>
+      <div class="fg"><label>Description</label><textarea id="ede" style="min-height:85px"></textarea></div>
+      <div class="fg" id="etf"><label>Tags (virgule)</label><input id="etg" placeholder="Python, Splunk..."/></div>
+    </div>
+    <div style="padding:.9rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.7rem;position:sticky;bottom:0;background:#060d07">
+      <button class="btn btn-r btn-sm" onclick="closeExpM()"><i class="fas fa-times"></i> Annuler</button>
+      <button class="btn" onclick="saveExpE()"><i class="fas fa-save"></i> Enregistrer</button>
+    </div>
+  </div>
+</div>
+
+<!-- PROJECT MODAL -->
+<div style="position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:500;display:flex;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto;opacity:0;pointer-events:none;transition:opacity .3s" id="prjm">
+  <div style="background:#060d07;border:1px solid var(--border2);width:100%;max-width:700px;margin:auto;position:relative;max-height:90vh;overflow-y:auto">
+    <div style="padding:1rem 1.4rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;background:#060d07;z-index:10">
+      <div style="font-family:var(--t);font-size:.87rem;color:var(--green);letter-spacing:2px" id="prjt">PROJET</div>
+      <button style="background:transparent;border:1px solid var(--border);color:var(--dim);width:28px;height:28px;display:flex;align-items:center;justify-content:center;cursor:pointer" onclick="closeProjM()" onmouseover="this.style.borderColor='var(--red)';this.style.color='var(--red)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--dim)'"><i class="fas fa-times"></i></button>
+    </div>
+    <div style="padding:1.4rem">
+      <input type="hidden" id="pjid"/>
+      <div class="fg"><label>Image de couverture (URL)</label><input id="pcv" placeholder="https://i.ibb.co/..." oninput="prevCov()"/></div>
+      <img id="cpv" style="width:100%;height:130px;object-fit:cover;display:none;border:1px solid var(--border);margin-bottom:.9rem"/>
+      <div class="row"><div class="fg"><label>Nom *</label><input id="pjn" placeholder="Network Scanner"/></div><div class="fg"><label>Statut</label><select id="pjs"><option value="COMPLETED">COMPLETED</option><option value="ACTIVE">ACTIVE</option><option value="IN PROGRESS">IN PROGRESS</option></select></div></div>
+      <div class="fg"><label>Description *</label><textarea id="pjd"></textarea></div>
+      <div class="row"><div class="fg"><label>Tags (virgule)</label><input id="pjt" placeholder="Python, Nmap..."/></div><div class="fg"><label>Icône FA</label><input id="pji" placeholder="fas fa-search"/></div></div>
+      <div class="row"><div class="fg"><label>GitHub</label><input id="pjg" placeholder="https://github.com/..."/></div><div class="fg"><label>Demo</label><input id="pjdm" placeholder="https://..."/></div></div>
+      <hr/><div class="ct"><i class="fas fa-images"></i> Galerie pas à pas</div>
+      <div style="font-size:.66rem;color:var(--dim);margin-bottom:.7rem">Chaque étape = image + titre + description. Les visiteurs naviguent pas à pas.</div>
+      <div id="ste"></div>
+      <button class="btn btn-sm btn-c" onclick="addStep()"><i class="fas fa-plus"></i> Ajouter une étape</button>
+    </div>
+    <div style="padding:.9rem 1.4rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:.7rem;position:sticky;bottom:0;background:#060d07">
+      <button class="btn btn-r btn-sm" onclick="closeProjM()"><i class="fas fa-times"></i> Annuler</button>
+      <button class="btn" onclick="saveProj()"><i class="fas fa-save"></i> Enregistrer &amp; Sync</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   ADMIN — gestion-k7x9p.html v5.0
+   ============================================================ */
+var JBURL='https://api.jsonbin.io/v3/b/',LK='fn_portfolio_data',LCK='fn_cloud_cfg',LAK='fn_auth',LLK='fn_lock';
+
+var DEF={
+  password:"Admin@2025",n8n_webhook:"",
+  profile:{photo:null,name:"DJOUMESSI TATSIFANG",firstname:"Fredy Nelson",title:"FUTUR Ingénieur Cybersécurité",location:"France",accroche:"Passionné par la cybersécurité et la protection des systèmes d'information."},
+  apropos:{paragraphes:["Bonjour, je suis <strong>Fredy Nelson DJOUMESSI TATSIFANG</strong>, étudiant en ingénierie à l'ESAIP, spécialisé en cybersécurité.","Mon objectif est de contribuer à la sécurisation des infrastructures numériques.","Passionné par l'automatisation No-Code avec n8n, Make et les architectures Cloud."],photos:[]},
+  infos:{nom:"Fredy Nelson DJOUMESSI",email:"fndjoumessi@gmail.com",tel:"+33 7 58 59 62 75",location:"France",formation:"ESAIP école d'ingénieur saint barthélemy anjou",specialite:"Cybersécurité"},
+  competences:[
+    {id:"s1",category:"Sécurité Offensive",icon:"fas fa-crosshairs",skills:[{name:"Pentesting",level:85},{name:"Kali Linux / Metasploit",level:80},{name:"CTF / Exploitation",level:75}]},
+    {id:"s2",category:"Cloud & DevOps",icon:"fas fa-cloud",skills:[{name:"AWS / Azure",level:70},{name:"Docker",level:65},{name:"CI/CD",level:60}]},
+    {id:"s3",category:"No-Code & Automatisation",icon:"fas fa-robot",skills:[{name:"n8n",level:90},{name:"Make (Integromat)",level:85},{name:"Waha / WhatsApp API",level:80}]},
+    {id:"s4",category:"Réseau & Système",icon:"fas fa-network-wired",skills:[{name:"TCP/IP / Protocoles",level:85},{name:"Linux / Windows Server",level:80},{name:"Active Directory",level:65}]}
+  ],
+  certifications:[{name:"TryHackMe",icon:"fas fa-trophy"},{name:"HackTheBox",icon:"fas fa-box"}],
+  experiences:{stages:[],academique:[]},
+  projects:[],
+  interets:[{icon:"fas fa-robot",title:"No-Code & Automatisation",desc:"Création de systèmes automatisés avec n8n, Make."},{icon:"fas fa-futbol",title:"Football",desc:"Passionné de football."},{icon:"fas fa-plane",title:"Voyages",desc:"Explorer de nouveaux pays."},{icon:"fas fa-cloud",title:"Cloud Computing",desc:"Veille sur AWS, Azure."}]
+};
+
+/* ── DATA ── */
+function getData(){try{var r=localStorage.getItem(LK);if(!r)return JSON.parse(JSON.stringify(DEF));var s=JSON.parse(r),b=JSON.parse(JSON.stringify(DEF));for(var k in s){if(s.hasOwnProperty(k))b[k]=s[k];}if(!b.password)b.password=DEF.password;return b;}catch(e){return JSON.parse(JSON.stringify(DEF));}}
+function getCfg(){try{return JSON.parse(localStorage.getItem(LCK)||'{}');}catch(e){return {};}}
+function saveCfg(c){localStorage.setItem(LCK,JSON.stringify(c));}
+
+function saveLocal(d){
+  try{d._t=Date.now();localStorage.setItem(LK,JSON.stringify(d));return true;}
+  catch(e){if(e.name==='QuotaExceededError'){alert('⚠️ Stockage plein ! Utilise des URLs (imgbb.com) pour les photos.');}return false;}
+}
+
+/* ── CLOUD SYNC ── */
+function setSyncStatus(state,msg){
+  var dot=document.getElementById('sdot'),txt=document.getElementById('stxt');
+  if(dot){dot.className='sbar-dot '+(state==='ok'?'ok':state==='err'?'err':'wait');}
+  if(txt)txt.textContent=msg||'';
+}
+
+function pushCloud(cb){
+  var cfg=getCfg();
+  if(!cfg.binId||!cfg.apiKey){toast('⚠️ Configure JSONBin dans Paramètres d\'abord.',true);if(cb)cb(false);return;}
+  setSyncStatus('wait','Synchronisation...');
+  var d=getData();
+  fetch(JBURL+cfg.binId,{method:'PUT',headers:{'Content-Type':'application/json','X-Master-Key':cfg.apiKey},body:JSON.stringify(d)})
+    .then(function(r){
+      if(r.ok){setSyncStatus('ok','✓ Synchronisé — '+(new Date().toLocaleTimeString('fr-FR')));document.getElementById('slast').textContent='';if(cb)cb(true);}
+      else{setSyncStatus('err','✗ Erreur cloud ('+r.status+')');if(cb)cb(false);}
+    })
+    .catch(function(){setSyncStatus('err','✗ Erreur réseau');if(cb)cb(false);});
+}
+
+function pullCloud(){
+  var cfg=getCfg();
+  if(!cfg.binId||!cfg.apiKey){toast('⚠️ Configure JSONBin dans Paramètres.',true);return;}
+  setSyncStatus('wait','Récupération...');
+  fetch(JBURL+cfg.binId+'/latest',{headers:{'X-Master-Key':cfg.apiKey}})
+    .then(function(r){return r.ok?r.json():null;})
+    .then(function(j){
+      if(j&&j.record&&Object.keys(j.record).length>0){
+        saveLocal(j.record);
+        setSyncStatus('ok','✓ Données récupérées');
+        toast('✓ Données récupérées du cloud !');
+        setTimeout(function(){location.reload();},1200);
+      }else{setSyncStatus('err','✗ Bin vide ou inaccessible');}
+    })
+    .catch(function(){setSyncStatus('err','✗ Erreur réseau');});
+}
+
+function syncNow(){
+  var d=getData();
+  if(saveLocal(d))pushCloud(function(ok){if(ok)toast('✓ Portfolio synchronisé !');else toast('✗ Sync cloud échouée — données sauvegardées localement',true);});
+}
+
+/* ── SAVE & SYNC ── */
+function saveAndSync(d,msgId){
+  if(!saveLocal(d)){return;}
+  if(msgId){var el=document.getElementById(msgId);if(el){el.className='msg ok';el.innerHTML='<i class="fas fa-check"></i> Enregistré !';el.style.display='flex';setTimeout(function(){el.style.display='none';},2500);}}
+  var cfg=getCfg();
+  if(cfg.binId&&cfg.apiKey){pushCloud(function(ok){toast(ok?'✓ Synchronisé avec le cloud !':'✓ Enregistré localement (cloud indisponible)',!ok);});}
+  else{toast('✓ Enregistré localement. Configure JSONBin pour sync multi-appareils.');}
+}
+
+/* ── TOAST ── */
+function toast(msg,warn){
+  var t=document.getElementById('gtoast');if(!t)return;
+  t.innerHTML='<i class="fas '+(warn?'fa-exclamation-triangle':'fa-check-circle')+'"></i> '+msg;
+  t.style.borderColor=warn?'var(--red)':'var(--green)';t.style.color=warn?'var(--red)':'var(--green)';
+  t.style.display='flex';setTimeout(function(){t.style.display='none';},3500);
+}
+
+function showMsg(id,msg,ok){
+  var el=document.getElementById(id);if(!el)return;
+  el.className='msg '+(ok!==false?'ok':'er');
+  el.innerHTML='<i class="fas '+(ok!==false?'fa-check':'fa-times')+'"></i> '+(msg||'OK');
+  el.style.display='flex';setTimeout(function(){el.style.display='none';},2500);
+}
+
+/* ── LOGIN ── */
+var MAX=3,DUR=5*60*1000,li=null;
+function getLock(){try{return JSON.parse(localStorage.getItem(LLK)||'{"a":0,"u":null}');}catch(e){return{a:0,u:null};}}
+function setLock(s){localStorage.setItem(LLK,JSON.stringify(s));}
+function setDots(n){for(var i=1;i<=3;i++){var d=document.getElementById('d'+i);if(d)d.className='adot'+(i<=n?' u':'');}}
+function showLock(u){
+  var pwd=document.getElementById('lpwd'),btn=document.getElementById('lbtn'),lp=document.getElementById('lpl');
+  if(pwd){pwd.disabled=true;pwd.value='';}if(btn){btn.disabled=true;btn.style.opacity='.4';}if(lp)lp.style.display='flex';setDots(3);
+  if(li)clearInterval(li);
+  li=setInterval(function(){var rem=u-Date.now();if(rem<=0){clearInterval(li);resetLock();return;}var tm=document.getElementById('ltm');if(tm)tm.textContent=Math.floor(rem/60000)+':'+(String(Math.floor((rem%60000)/1000)).padStart(2,'0'));},500);
+}
+function resetLock(){
+  setLock({a:0,u:null});var pwd=document.getElementById('lpwd'),btn=document.getElementById('lbtn'),lp=document.getElementById('lpl');
+  if(pwd){pwd.disabled=false;pwd.value='';}if(btn){btn.disabled=false;btn.style.opacity='1';}if(lp)lp.style.display='none';setDots(0);
+}
+function doLogin(){
+  var st=getLock();if(st.u&&Date.now()<st.u){showLock(st.u);return;}
+  var pwd=document.getElementById('lpwd');if(!pwd)return;
+  var v=pwd.value,d=getData(),correct=d.password||DEF.password;
+  if(v===correct){setLock({a:0,u:null});localStorage.setItem(LAK,'1');document.getElementById('ls').style.display='none';document.getElementById('dsh').style.display='block';initAdmin();}
+  else{
+    var na=(st.a||0)+1,err=document.getElementById('lerr'),ets=document.getElementById('lets');
+    if(na>=MAX){var u=Date.now()+DUR;setLock({a:na,u:u});showLock(u);}
+    else{setLock({a:na,u:null});setDots(na);if(ets)ets.textContent='Mot de passe incorrect. '+(MAX-na)+' essai(s) restant.';if(err){err.style.display='flex';setTimeout(function(){err.style.display='none';},3000);}}
+    pwd.value='';
+  }
+}
+document.getElementById('lbtn').addEventListener('click',doLogin);
+document.getElementById('lpwd').addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+document.getElementById('lout').addEventListener('click',function(){localStorage.removeItem(LAK);location.reload();});
+(function(){var st=getLock();if(st.u&&Date.now()<st.u)showLock(st.u);else if(st.u)resetLock();else setDots(st.a||0);if(localStorage.getItem(LAK)==='1'){document.getElementById('ls').style.display='none';document.getElementById('dsh').style.display='block';setTimeout(initAdmin,50);}})();
+
+/* ── NAV ── */
+document.querySelectorAll('.al2').forEach(function(l){
+  l.addEventListener('click',function(){
+    document.querySelectorAll('.al2').forEach(function(x){x.classList.remove('a');});
+    document.querySelectorAll('.sec').forEach(function(x){x.classList.remove('a');});
+    l.classList.add('a');var s=document.getElementById('sec-'+l.dataset.s);if(s){s.classList.add('a');loadSec(l.dataset.s);}
+  });
+});
+function loadSec(s){var d=getData();
+  if(s==='dash')loadDash(d);else if(s==='profil')loadProfil(d);else if(s==='apropos')loadApropos(d);
+  else if(s==='comp')loadComp(d);else if(s==='certs')loadCerts(d);else if(s==='exp')loadExp(d);
+  else if(s==='projs')loadProjs(d);else if(s==='int')loadInt(d);else if(s==='sett')loadSett(d);
+}
+function initAdmin(){
+  loadSec('dash');
+  var cfg=getCfg();
+  if(cfg.binId&&cfg.apiKey){setSyncStatus('ok','Connexion cloud active');fetch(JBURL+cfg.binId+'/latest',{headers:{'X-Master-Key':cfg.apiKey}}).then(function(r){return r.ok?r.json():null;}).then(function(j){if(j&&j.record&&j.record._t&&(!getData()._t||j.record._t>getData()._t)){saveLocal(j.record);setSyncStatus('ok','✓ Données fraîches du cloud');setTimeout(function(){loadSec(document.querySelector('.al2.a').dataset.s||'dash');},300);}else setSyncStatus('ok','✓ Données à jour');}).catch(function(){setSyncStatus('err','✗ Cloud inaccessible — mode local');});}
+  else setSyncStatus('wait','⚠ JSONBin non configuré — mode local uniquement');
+}
+
+/* ── DASHBOARD ── */
+function loadDash(d){
+  var el=document.getElementById('dstats'),items=[{icon:'fas fa-folder-open',l:'Projets',v:(d.projects||[]).length,c:'var(--green)'},{icon:'fas fa-briefcase',l:'Stages',v:(d.experiences.stages||[]).length,c:'var(--cyan)'},{icon:'fas fa-graduation-cap',l:'Formations',v:(d.experiences.academique||[]).length,c:'var(--cyan)'},{icon:'fas fa-certificate',l:'Certifications',v:(d.certifications||[]).length,c:'var(--green)'}];
+  if(el)el.innerHTML=items.map(function(it){return'<div style="background:var(--card);border:1px solid var(--border);padding:1.1rem;text-align:center"><i class="'+it.icon+'" style="font-size:1.4rem;color:'+it.c+';display:block;margin-bottom:.4rem"></i><div style="font-family:var(--t);font-size:1.4rem;color:'+it.c+'">'+it.v+'</div><div style="font-size:.62rem;color:var(--dim);letter-spacing:2px;margin-top:2px">'+it.l+'</div></div>';}).join('');
+}
+
+/* ── PROFIL ── */
+function loadProfil(d){
+  var p=d.profile,inf=d.infos;
+  function sv(id,v){var el=document.getElementById(id);if(el)el.value=v||'';}
+  sv('pn',p.name);sv('pp2',p.firstname);sv('pt',p.title);sv('pl',p.location);sv('pa',p.accroche);
+  sv('in',inf.nom);sv('ie',inf.email);sv('it',inf.tel);sv('il',inf.location);sv('if',inf.formation);sv('is',inf.specialite);
+  var prev=document.getElementById('pp');if(prev&&p.photo){prev.src=p.photo;prev.style.display='block';}
+  var fi=document.getElementById('pfi');
+  if(fi&&!fi._bound){fi._bound=true;fi.addEventListener('change',function(){var file=fi.files[0];if(!file)return;var reader=new FileReader();reader.onload=function(e){var img=new Image();img.onload=function(){var cv=document.createElement('canvas'),M=450,w=img.width,h=img.height;if(w>M){h=Math.round(h*M/w);w=M;}if(h>M){w=Math.round(w*M/h);h=M;}cv.width=w;cv.height=h;cv.getContext('2d').drawImage(img,0,0,w,h);var comp=cv.toDataURL('image/jpeg',0.75);var kb=Math.round(comp.length*0.75/1024);var prev=document.getElementById('pp'),si=document.getElementById('psi');if(prev){prev.src=comp;prev.style.display='block';}if(si)si.textContent='// '+kb+'KB ('+w+'x'+h+'px)';var d2=getData();d2.profile.photo=comp;saveAndSync(d2,'pm');};img.src=e.target.result;};reader.readAsDataURL(file);});}
+}
+function applyUrl(){var url=(document.getElementById('purl')||{}).value;if(!url||!url.trim())return;var prev=document.getElementById('pp');if(prev){prev.src=url.trim();prev.style.display='block';}var d=getData();d.profile.photo=url.trim();saveAndSync(d,'pm');}
+function saveProfil(){var d=getData();function gv(id){var el=document.getElementById(id);return el?el.value:'';}d.profile.name=gv('pn');d.profile.firstname=gv('pp2');d.profile.title=gv('pt');d.profile.location=gv('pl');d.profile.accroche=gv('pa');saveAndSync(d,'pm');}
+function saveInfos(){var d=getData();function gv(id){var el=document.getElementById(id);return el?el.value:'';}d.infos.nom=gv('in');d.infos.email=gv('ie');d.infos.tel=gv('it');d.infos.location=gv('il');d.infos.formation=gv('if');d.infos.specialite=gv('is');saveAndSync(d,'im');}
+
+/* ── À PROPOS ── */
+function loadApropos(d){renderParas(d.apropos.paragraphes||[]);renderApPhotos(d.apropos.photos||[]);}
+function renderParas(ps){var c=document.getElementById('parac');if(!c)return;c.innerHTML=ps.map(function(p,i){return'<div style="display:flex;gap:.45rem;align-items:flex-start;margin-bottom:.7rem"><textarea id="pr_'+i+'" style="flex:1;min-height:60px">'+p+'</textarea><button class="btn btn-r btn-sm" onclick="delPara('+i+')"><i class="fas fa-trash"></i></button></div>';}).join('');}
+function addPara(){var d=getData();d.apropos.paragraphes.push('Nouveau paragraphe...');saveLocal(d);renderParas(d.apropos.paragraphes);}
+function delPara(i){var d=getData();d.apropos.paragraphes.splice(i,1);saveLocal(d);renderParas(d.apropos.paragraphes);}
+function addApPhoto(){var url=(document.getElementById('apu')||{}).value;if(!url||!url.trim())return;var cap=(document.getElementById('apc')||{}).value;var d=getData();if(!d.apropos.photos)d.apropos.photos=[];d.apropos.photos.push({src:url.trim(),caption:cap});saveLocal(d);renderApPhotos(d.apropos.photos);document.getElementById('apu').value='';document.getElementById('apc').value='';}
+function renderApPhotos(ps){var g=document.getElementById('apg');if(!g)return;g.innerHTML=ps.map(function(ph,i){return'<div class="api"><img src="'+ph.src+'" onerror="this.style.display=\'none\'"/><div class="apc">'+(ph.caption||'')+'</div><button class="apd" onclick="delApPhoto('+i+')"><i class="fas fa-times"></i></button></div>';}).join('');}
+function delApPhoto(i){var d=getData();d.apropos.photos.splice(i,1);saveLocal(d);renderApPhotos(d.apropos.photos);}
+function saveApropos(){var d=getData();var ps=[];var i=0;while(document.getElementById('pr_'+i)){ps.push(document.getElementById('pr_'+i).value);i++;}d.apropos.paragraphes=ps;saveAndSync(d,'apm');}
+
+/* ── COMPÉTENCES ── */
+function loadComp(d){var el=document.getElementById('ce');if(!el)return;el.innerHTML=(d.competences||[]).map(function(cat,ci){return'<div class="card"><div class="ct"><i class="'+cat.icon+'"></i> <input id="cn_'+ci+'" value="'+cat.category+'" style="background:transparent;border:none;border-bottom:1px solid var(--border);color:var(--cyan);font-size:.76rem;width:auto;padding:.15rem"/></div><div id="skl_'+ci+'">'+(cat.skills||[]).map(function(s,si){return'<div class="sk"><input id="sn_'+ci+'_'+si+'" value="'+s.name+'" placeholder="Compétence"/><input type="range" min="0" max="100" value="'+s.level+'" id="sl_'+ci+'_'+si+'" oninput="document.getElementById(\'sv_'+ci+'_'+si+'\').textContent=this.value+\'%\'"/><span class="slv" id="sv_'+ci+'_'+si+'">'+s.level+'%</span><button class="btn btn-r btn-sm" onclick="delSkill('+ci+','+si+')"><i class="fas fa-times"></i></button></div>';}).join('')+'</div><button class="btn btn-sm btn-c" style="margin-top:.4rem" onclick="addSkill('+ci+')"><i class="fas fa-plus"></i> Compétence</button></div>';}).join('');}
+function addSkill(ci){var d=getData();d.competences[ci].skills.push({name:'Nouvelle',level:50});saveLocal(d);loadComp(d);}
+function delSkill(ci,si){var d=getData();d.competences[ci].skills.splice(si,1);saveLocal(d);loadComp(d);}
+function saveComp(){var d=getData();d.competences.forEach(function(cat,ci){var cn=document.getElementById('cn_'+ci);if(cn)cat.category=cn.value;cat.skills.forEach(function(s,si){var n=document.getElementById('sn_'+ci+'_'+si);if(n)s.name=n.value;var l=document.getElementById('sl_'+ci+'_'+si);if(l)s.level=parseInt(l.value);});});saveAndSync(d,'cm');}
+
+/* ── CERTIFICATIONS ── */
+function loadCerts(d){var el=document.getElementById('cl');if(!el)return;var c=d.certifications||[];el.innerHTML=c.length?c.map(function(x,i){return'<div class="li"><i class="'+(x.icon||'fas fa-certificate')+'" style="color:var(--cyan)"></i><div style="flex:1;font-size:.78rem;color:var(--green)">'+x.name+'</div><button class="btn btn-r btn-sm" onclick="delCert('+i+')"><i class="fas fa-trash"></i></button></div>';}).join(''):'<div class="ni">Aucune certification.</div>';}
+function addCert(){var n=(document.getElementById('ncn')||{}).value;if(!n||!n.trim())return;var ic=(document.getElementById('nci')||{}).value||'fas fa-certificate';var d=getData();d.certifications.push({name:n.trim(),icon:ic.trim()});saveLocal(d);loadCerts(d);document.getElementById('ncn').value='';document.getElementById('nci').value='';}
+function delCert(i){var d=getData();d.certifications.splice(i,1);saveLocal(d);loadCerts(d);}
+function saveCerts(){saveAndSync(getData(),'ctm');}
+
+/* ── EXPÉRIENCES ── */
+var expType='stage';
+function loadExp(d){
+  function row(e,type,i){return'<div class="li"><div style="flex:1"><div class="ln">'+(e.title||'')+'</div><div class="ls4">'+(e.date||'')+' · '+(e.company||e.institution||'')+'</div></div><div class="la"><button class="btn btn-sm btn-c" onclick="openExpM(\''+type+'\','+i+')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-r" onclick="delExp(\''+type+'\','+i+')"><i class="fas fa-trash"></i></button></div></div>';}
+  var sl=document.getElementById('sl2'),al=document.getElementById('al2');
+  if(sl)sl.innerHTML=(d.experiences.stages||[]).length?d.experiences.stages.map(function(e,i){return row(e,'stage',i);}).join(''):'<div class="ni">Aucun stage. Clique Ajouter.</div>';
+  if(al)al.innerHTML=(d.experiences.academique||[]).length?d.experiences.academique.map(function(e,i){return row(e,'acad',i);}).join(''):'<div class="ni">Aucune formation. Clique Ajouter.</div>';
+}
+function openExpM(type,idx){
+  expType=type;var isA=type==='acad';
+  document.getElementById('ety').value=type;document.getElementById('eidx').value=idx!==undefined?idx:-1;
+  document.getElementById('expt').textContent=isA?'FORMATION ACADÉMIQUE':'STAGE / EMPLOI';
+  document.getElementById('esf').style.display=isA?'none':'block';document.getElementById('eaf').style.display=isA?'block':'none';document.getElementById('etf').style.display=isA?'none':'block';
+  ['ed','eti','eco','elo','eta','ein','ela','ede','etg'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});
+  if(idx!==undefined&&idx>=0){var d=getData(),list=isA?d.experiences.academique:d.experiences.stages,e=list[idx];if(e){document.getElementById('ed').value=e.date||'';document.getElementById('ede').value=e.description||'';if(!isA){document.getElementById('eti').value=e.title||'';document.getElementById('eco').value=e.company||'';document.getElementById('elo').value=e.location||'';document.getElementById('etg').value=(e.tags||[]).join(', ');}else{document.getElementById('eta').value=e.title||'';document.getElementById('ein').value=e.institution||'';document.getElementById('ela').value=e.location||'';}}}
+  var m=document.getElementById('expm');if(m){m.style.opacity='1';m.style.pointerEvents='all';}
+}
+function closeExpM(){var m=document.getElementById('expm');if(m){m.style.opacity='0';m.style.pointerEvents='none';}}
+function saveExpE(){
+  var d=getData(),isA=document.getElementById('ety').value==='acad',idx=parseInt(document.getElementById('eidx').value);
+  function gv(id){var el=document.getElementById(id);return el?el.value:'';}
+  var e={date:gv('ed'),description:gv('ede')};
+  if(!isA){e.title=gv('eti');e.company=gv('eco');e.location=gv('elo');e.tags=gv('etg').split(',').map(function(t){return t.trim();}).filter(Boolean);}
+  else{e.title=gv('eta');e.institution=gv('ein');e.location=gv('ela');}
+  var list=isA?d.experiences.academique:d.experiences.stages;if(idx>=0)list[idx]=e;else list.unshift(e);
+  saveAndSync(d,'em');closeExpM();loadExp(d);
+}
+function delExp(type,i){var d=getData();(type==='acad'?d.experiences.academique:d.experiences.stages).splice(i,1);saveLocal(d);loadExp(d);}
+function saveExp(){saveAndSync(getData(),'em');}
+
+/* ── PROJETS ── */
+var editSteps=[];
+function loadProjs(d){
+  var el=document.getElementById('pl2');if(!el)return;
+  el.innerHTML=(d.projects||[]).length?(d.projects||[]).map(function(p,i){return'<div class="li">'+(p.cover?'<img src="'+p.cover+'" style="width:48px;height:48px;object-fit:cover;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\'"/>':'<div style="width:48px;height:48px;display:flex;align-items:center;justify-content:center;border:1px solid var(--border);color:var(--green3);flex-shrink:0"><i class="'+(p.icon||'fas fa-code')+'"></i></div>')+'<div style="flex:1"><div class="ln">'+p.name+'</div><div class="ls4">'+(p.tags||[]).join(' · ')+' · '+(p.steps||[]).length+' étape(s)</div></div><span class="bd '+(p.status==='ACTIVE'?'br':'bg')+'" style="flex-shrink:0">'+(p.status||'COMPLETED')+'</span><div class="la"><button class="btn btn-sm btn-c" onclick="openProjM(\''+p.id+'\')"><i class="fas fa-edit"></i></button><button class="btn btn-sm btn-r" onclick="delProj(\''+p.id+'\')"><i class="fas fa-trash"></i></button></div></div>';}).join(''):'<div class="ni"><i class="fas fa-folder-open" style="font-size:1.4rem;display:block;margin-bottom:.4rem;color:var(--green3)"></i>Aucun projet. Clique "Nouveau projet".</div>';
+}
+function openProjM(id){
+  var d=getData(),proj=id?d.projects.find(function(p){return p.id===id;}):null;
+  document.getElementById('prjt').textContent=proj?'MODIFIER : '+proj.name:'NOUVEAU PROJET';
+  document.getElementById('pjid').value=proj?proj.id:'';
+  document.getElementById('pjn').value=proj?proj.name:'';document.getElementById('pjd').value=proj?proj.description:'';
+  document.getElementById('pjs').value=proj?proj.status||'COMPLETED':'COMPLETED';
+  document.getElementById('pjt').value=proj?(proj.tags||[]).join(', '):'';document.getElementById('pji').value=proj?proj.icon||'':'fas fa-code';
+  document.getElementById('pjg').value=proj?proj.github||'':'';document.getElementById('pjdm').value=proj?proj.demo||'':'';document.getElementById('pcv').value=proj?proj.cover||'':'';
+  var cp=document.getElementById('cpv');if(proj&&proj.cover){cp.src=proj.cover;cp.style.display='block';}else{cp.style.display='none';}
+  editSteps=proj?JSON.parse(JSON.stringify(proj.steps||[])):[];renderStepsEditor();
+  var m=document.getElementById('prjm');if(m){m.style.opacity='1';m.style.pointerEvents='all';}
+}
+function closeProjM(){var m=document.getElementById('prjm');if(m){m.style.opacity='0';m.style.pointerEvents='none';}}
+function prevCov(){var url=document.getElementById('pcv').value,cp=document.getElementById('cpv');if(url){cp.src=url;cp.style.display='block';}else cp.style.display='none';}
+function addStep(){editSteps.push({image:'',title:'',caption:''});renderStepsEditor();}
+function delStep(i){editSteps.splice(i,1);renderStepsEditor();}
+function renderStepsEditor(){
+  var el=document.getElementById('ste');if(!el)return;
+  if(!editSteps.length){el.innerHTML='<div class="ni" style="margin-bottom:.7rem">Aucune étape.</div>';return;}
+  el.innerHTML=editSteps.map(function(s,i){return'<div class="se"><div class="sh"><span class="sn">ÉTAPE '+(i+1)+'</span><button class="btn btn-r btn-sm" onclick="delStep('+i+')"><i class="fas fa-times"></i></button></div>'+(s.image?'<img src="'+s.image+'" class="sp" onerror="this.style.display=\'none\'"/>':'')+'<div class="fg"><label>URL image</label><input id="si_'+i+'" value="'+(s.image||'')+'" placeholder="https://i.ibb.co/..." oninput="editSteps['+i+'].image=this.value;renderStepsEditor()"/></div><div class="fg"><label>Titre</label><input id="st_'+i+'" value="'+(s.title||'')+'" placeholder="Analyse réseau" oninput="editSteps['+i+'].title=this.value"/></div><div class="fg"><label>Description</label><textarea id="sc_'+i+'" style="min-height:52px" oninput="editSteps['+i+'].caption=this.value">'+(s.caption||'')+'</textarea></div></div>';}).join('');
+}
+function saveProj(){
+  var d=getData();
+  editSteps.forEach(function(s,i){var t=document.getElementById('st_'+i);if(t)s.title=t.value;var c=document.getElementById('sc_'+i);if(c)s.caption=c.value;});
+  function gv(x){var el=document.getElementById(x);return el?el.value:'';}
+  var id=gv('pjid')||('proj_'+Date.now());
+  var proj={id:id,name:gv('pjn'),description:gv('pjd'),status:gv('pjs'),tags:gv('pjt').split(',').map(function(t){return t.trim();}).filter(Boolean),icon:gv('pji')||'fas fa-code',github:gv('pjg'),demo:gv('pjdm'),cover:gv('pcv'),steps:JSON.parse(JSON.stringify(editSteps))};
+  var idx=d.projects.findIndex(function(p){return p.id===id;});if(idx>=0)d.projects[idx]=proj;else d.projects.push(proj);
+  saveAndSync(d,null);closeProjM();loadProjs(d);toast('✓ Projet enregistré et synchronisé !');
+}
+function delProj(id){if(!confirm('Supprimer ce projet ?'))return;var d=getData();d.projects=d.projects.filter(function(p){return p.id!==id;});saveAndSync(d,null);loadProjs(d);}
+
+/* ── CENTRES D'INTÉRÊT ── */
+function loadInt(d){var el=document.getElementById('intl');if(!el)return;el.innerHTML=(d.interets||[]).map(function(it,i){return'<div class="li"><i class="'+it.icon+'" style="color:var(--green3)"></i><div style="flex:1"><div class="ln">'+it.title+'</div><div class="ls4">'+it.desc.slice(0,50)+'...</div></div><button class="btn btn-r btn-sm" onclick="delInt('+i+')"><i class="fas fa-trash"></i></button></div>';}).join('')||'<div class="ni">Aucun centre d\'intérêt.</div>';}
+function addInt(){var ic=(document.getElementById('nii')||{}).value||'fas fa-star',ti=(document.getElementById('nit')||{}).value;if(!ti||!ti.trim())return;var de=(document.getElementById('nid')||{}).value;var d=getData();d.interets.push({icon:ic.trim(),title:ti.trim(),desc:de});saveLocal(d);loadInt(d);['nii','nit','nid'].forEach(function(id){var el=document.getElementById(id);if(el)el.value='';});}
+function delInt(i){var d=getData();d.interets.splice(i,1);saveLocal(d);loadInt(d);}
+function saveInt(){saveAndSync(getData(),'intm');}
+
+/* ── PARAMÈTRES ── */
+function loadSett(d){var cfg=getCfg();var bi=document.getElementById('jbid'),bk=document.getElementById('jbkey'),n8=document.getElementById('n8n');if(bi)bi.value=cfg.binId||'';if(bk)bk.value=cfg.apiKey||'';if(n8)n8.value=d.n8n_webhook||'';}
+function saveCloudCfg(){var bi=(document.getElementById('jbid')||{}).value,bk=(document.getElementById('jbkey')||{}).value;saveCfg({binId:bi.trim(),apiKey:bk.trim()});showMsg('ccm','Config enregistrée !');}
+function changePwd(){var p1=(document.getElementById('pw1')||{}).value,p2=(document.getElementById('pw2')||{}).value;if(!p1||p1!==p2){showMsg('pwe','Mots de passe différents.',false);return;}var d=getData();d.password=p1;saveAndSync(d,'pwm');document.getElementById('pw1').value='';document.getElementById('pw2').value='';}
+function saveWh(){var d=getData(),el=document.getElementById('n8n');d.n8n_webhook=el?el.value.trim():'';saveAndSync(d,'whm');}
+function exportD(){var b=new Blob([JSON.stringify(getData(),null,2)],{type:'application/json'});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='fn_portfolio.json';a.click();}
+function resetD(){if(!confirm('Réinitialiser toutes les données ?'))return;localStorage.removeItem(LK);localStorage.removeItem(LAK);location.reload();}
+document.getElementById('impf').addEventListener('change',function(){var f=this.files[0];if(!f)return;var r=new FileReader();r.onload=function(e){try{var d=JSON.parse(e.target.result);saveLocal(d);alert('✓ Importé !');location.reload();}catch(err){alert('JSON invalide.');}};r.readAsText(f);});
+</script>
+</body>
+</html>
