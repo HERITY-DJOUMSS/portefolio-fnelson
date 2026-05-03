@@ -1,50 +1,62 @@
-/* FN_SEC Portfolio — script.js v7.0 — FULL ROBUST & SECURE */
+/* =========================================================
+   PORTFOLIO FN_SEC — script.js v8.0 — VERSION OMNIBUS
+   Fusion complète : Fonctions Claude + Sync Cloud Sécurisée
+   ========================================================= */
 
-var BIN_ID = "69f7b799aaba882197692858"; // TON BIN ID ICI (Public)
-var JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
-var LS_KEY = 'fn_portfolio_data';
+/** 1. CONFIGURATION & CONSTANTES **/
+const BIN_ID = "69f7b799aaba882197692858"; 
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}/latest`;
+const LS_KEY = 'fn_portfolio_data';
 
-// --- INITIALISATION ---
-document.addEventListener('DOMContentLoaded', function() {
-    initMenu();
+const DEF = {
+    password: "Admin@2025",
+    profile: { photo: null, name: "DJOUMESSI", firstname: "Fredy Nelson", title: "FUTUR Ingénieur Cybersécurité", location: "France" },
+    experiences: { stages: [], academique: [] },
+    projects: [],
+    competences: [],
+    certifications: [],
+    interets: [],
+    visitor_count: 0
+};
+
+/** 2. INITIALISATION AU CHARGEMENT **/
+document.addEventListener('DOMContentLoaded', () => {
+    initMatrixEffect(); // Effet visuel de fond
+    initMenu();         // Menu Burger
+    initVisitorCounter();
     
-    // 1. Chargement immédiat (Cache Local) pour éviter le blanc
-    var cached = localStorage.getItem(LS_KEY);
-    if(cached) renderAll(JSON.parse(cached));
+    // Chargement immédiat (Cache)
+    const cached = localStorage.getItem(LS_KEY);
+    if (cached) renderAll(JSON.parse(cached));
 
-    // 2. Synchro Cloud (Sans clé car le Bin est mis en Public)
+    // Synchronisation Cloud (Sans clé car Bin Public)
     fetch(JSONBIN_URL, { headers: { 'X-Bin-Meta': 'false' } })
-    .then(r => r.ok ? r.json() : Promise.reject())
-    .then(data => {
-        localStorage.setItem(LS_KEY, JSON.stringify(data));
-        renderAll(data);
-        updateStatus(true);
-    })
-    .catch(() => updateStatus(false));
+        .then(r => r.ok ? r.json() : Promise.reject())
+        .then(data => {
+            localStorage.setItem(LS_KEY, JSON.stringify(data));
+            renderAll(data);
+            updateStatus(true);
+        })
+        .catch(() => updateStatus(false));
 });
 
-/* ── RENDU DE TOUTES LES SECTIONS ── */
+/** 3. RENDU GLOBAL DE L'INTERFACE **/
 function renderAll(d) {
-    if(!d) return;
+    if (!d) return;
 
-    // Profil & Hero
-    if(d.profile) {
-        setT('hero-name', d.profile.firstname + " " + d.profile.name);
-        setT('hero-title', d.profile.title);
-        var img = document.getElementById('profile-img');
-        if(img && d.profile.photo) img.src = d.profile.photo;
-    }
+    // --- HERO & IDENTITÉ ---
+    setText('hero-name', `${d.profile.firstname || ''} ${d.profile.name || ''}`);
+    setText('hero-title', d.profile.title || '');
+    const pImg = document.getElementById('profile-img');
+    if (pImg && d.profile.photo) pImg.src = d.profile.photo;
 
-    // Bug 2 Fix : Rendu de la Vie Académique (Stages & Études)
-    renderExperience(d.experiences);
-
-    // Compétences
-    var cGrid = document.getElementById('competences-grid');
-    if(cGrid && d.competences) {
+    // --- COMPÉTENCES ---
+    const cGrid = document.getElementById('competences-grid');
+    if (cGrid && d.competences) {
         cGrid.innerHTML = d.competences.map(cat => `
             <div class="comp-card reveal">
                 <div class="comp-header"><i class="${cat.icon}"></i> <h3>${cat.category}</h3></div>
-                ${cat.skills.map(s => `
+                ${(cat.skills || []).map(s => `
                     <div class="skill-item">
                         <span>${s.name}</span>
                         <div class="skill-bar"><div class="skill-progress" style="width:${s.level}%"></div></div>
@@ -54,91 +66,165 @@ function renderAll(d) {
         `).join('');
     }
 
-    // Projets
-    var pGrid = document.getElementById('projects-grid');
-    if(pGrid && d.projects) {
-        pGrid.innerHTML = d.projects.map(p => `
-            <div class="project-card reveal">
-                <div class="proj-img"><img src="${p.image || ''}"></div>
+    // --- PROJETS (Avec système de modale Claude) ---
+    const pGrid = document.getElementById('projects-grid');
+    if (pGrid && d.projects) {
+        pGrid.innerHTML = d.projects.map((p, idx) => `
+            <div class="project-card reveal" onclick="openProjectModal(${idx})">
+                <div class="proj-img"><img src="${p.image || ''}" alt=""></div>
                 <div class="proj-content">
+                    <div class="proj-id">#0${idx + 1}</div>
                     <h3>${p.title}</h3>
-                    <p>${p.desc}</p>
-                    <a href="${p.link}" target="_blank" class="proj-link">Détails</a>
+                    <p>${p.desc ? p.desc.substring(0, 80) : ''}...</p>
+                    <div class="proj-tags">${(p.tags || []).map(t => `<span>${t}</span>`).join('')}</div>
                 </div>
             </div>
         `).join('');
     }
 
-    // Bug 3 Fix : On relance l'observateur APRES le rendu du HTML
-    setTimeout(initReveal, 100);
+    // --- VIE ACADÉMIQUE (Bug 2 Fix) ---
+    renderExperienceSection(d.experiences);
+
+    // --- INTÉRÊTS ---
+    const iGrid = document.getElementById('interets-grid');
+    if (iGrid && d.interets) {
+        iGrid.innerHTML = d.interets.map(i => `
+            <div class="interet-card reveal">
+                <i class="${i.icon}"></i>
+                <h4>${i.title}</h4>
+                <p>${i.desc}</p>
+            </div>
+        `).join('');
+    }
+
+    // Relance les animations
+    setTimeout(initReveal, 300);
 }
 
-/* ── FOCUS : VIE ACADÉMIQUE (Bug 2) ── */
-function renderExperience(exp) {
-    var cont = document.getElementById('exp-content');
-    if(!cont || !exp) return;
+/** 4. FONCTIONNALITÉS EXPÉRIENCES (TABS) **/
+function renderExperienceSection(exp) {
+    const container = document.getElementById('exp-content');
+    if (!container || !exp) return;
 
-    // On génère le HTML des deux onglets
-    var html = `
+    container.innerHTML = `
         <div class="exp-tabs">
-            <button class="exp-tab active" onclick="switchTab('stages')">Stages & Pro</button>
-            <button class="exp-tab" onclick="switchTab('etudes')">Parcours Académique</button>
+            <button class="exp-tab active" data-tab="stages">Stages & Pro</button>
+            <button class="exp-tab" data-tab="etudes">Cursus Académique</button>
         </div>
-        <div id="tab-stages" class="tab-pane active">
-            ${(exp.stages || []).map(s => `<div class="exp-item"><h4>${s.role}</h4><p>${s.company}</p><span>${s.date}</span></div>`).join('')}
+        <div id="pane-stages" class="tab-pane active">
+            ${(exp.stages || []).length ? exp.stages.map(s => `
+                <div class="exp-item">
+                    <div class="exp-date">${s.date || ''}</div>
+                    <div class="exp-info"><h4>${s.role}</h4><h5>${s.company}</h5></div>
+                </div>`).join('') : '<p class="empty">Aucune donnée</p>'}
         </div>
-        <div id="tab-etudes" class="tab-pane">
-            ${(exp.academique || []).map(e => `<div class="exp-item"><h4>${e.diploma}</h4><p>${e.school}</p><span>${e.date}</span></div>`).join('')}
+        <div id="pane-etudes" class="tab-pane">
+            ${(exp.academique || []).length ? exp.academique.map(e => `
+                <div class="exp-item">
+                    <div class="exp-date">${e.date || ''}</div>
+                    <div class="exp-info"><h4>${e.diploma}</h4><h5>${e.school}</h5></div>
+                </div>`).join('') : '<p class="empty">Aucune donnée</p>'}
         </div>
     `;
-    cont.innerHTML = html;
+
+    container.querySelectorAll('.exp-tab').forEach(btn => {
+        btn.onclick = () => {
+            container.querySelectorAll('.exp-tab, .tab-pane').forEach(el => el.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById(`pane-${btn.dataset.tab}`).classList.add('active');
+        };
+    });
 }
 
-// Fonction de switch globale (attachée à window pour être accessible)
-window.switchTab = function(type) {
-    document.querySelectorAll('.exp-tab').forEach(t => t.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    event.currentTarget.classList.add('active');
-    document.getElementById('tab-' + type).classList.add('active');
+/** 5. SYSTÈME DE MODALE PROJET (Claude Spec) **/
+window.openProjectModal = function(idx) {
+    const d = JSON.parse(localStorage.getItem(LS_KEY));
+    const p = d.projects[idx];
+    if (!p) return;
+
+    const modal = document.getElementById('projModal');
+    const overlay = document.getElementById('projModalOverlay');
+    
+    document.getElementById('projModalTitle').textContent = p.title;
+    document.getElementById('projModalDesc').textContent = p.desc;
+    document.getElementById('projModalCover').style.backgroundImage = `url(${p.image || ''})`;
+    
+    modal.classList.add('active');
+    overlay.classList.add('active');
+    document.body.style.overflow = 'hidden';
 };
 
-/* ── RÉSOLUTIONS DES BUGS RESTANTS ── */
+window.closeProjectModal = function() {
+    document.getElementById('projModal').classList.remove('active');
+    document.getElementById('projModalOverlay').classList.remove('active');
+    document.body.style.overflow = 'auto';
+};
+
+/** 6. UTILITAIRES & BUGS FIXES **/
+function initMenu() {
+    const b = document.getElementById('burgerBtn'), s = document.getElementById('sidebar'), o = document.getElementById('sidebarOverlay');
+    const toggle = () => { [b, s, o].forEach(el => el && el.classList.toggle('active')); };
+    if(b) b.onclick = toggle;
+    if(o) o.onclick = toggle;
+    document.querySelectorAll('.side-nav a').forEach(a => {
+        a.onclick = () => {
+            toggle();
+            const target = document.querySelector(a.getAttribute('href'));
+            if(target) window.scrollTo({ top: target.offsetTop - 70, behavior: 'smooth' });
+        };
+    });
+}
 
 function initReveal() {
-    var observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            // Si l'élément est visible ou si la section est vide mais doit apparaître
-            if (entry.isIntersecting) {
-                entry.target.classList.add('visible');
-            }
-        });
-    }, { threshold: 0.05 });
-    
+    const obs = new IntersectionObserver(ents => {
+        ents.forEach(en => { if(en.isIntersecting) en.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach(el => {
-        observer.observe(el);
-        // Sécurité Bug 3 : Si l'élément est déjà dans le viewport au chargement
+        obs.observe(el);
         if(el.getBoundingClientRect().top < window.innerHeight) el.classList.add('visible');
     });
 }
 
-function initMenu() {
-    var b = document.getElementById('burgerBtn'), s = document.getElementById('sidebar'), o = document.getElementById('sidebarOverlay');
-    if(!b) return;
-    var toggle = () => { [b,s,o].forEach(el => el && el.classList.toggle('active')); };
-    b.onclick = toggle;
-    if(o) o.onclick = toggle;
-    document.querySelectorAll('.side-nav a').forEach(a => a.onclick = toggle);
+function initVisitorCounter() {
+    let count = parseInt(localStorage.getItem('fn_v_count') || '0');
+    count++;
+    localStorage.setItem('fn_v_count', count);
+    const el = document.getElementById('v_count');
+    if(el) el.textContent = count.toString().padStart(5, '0');
 }
 
-function setT(id, txt) { 
-    var e = document.getElementById(id); 
-    if(e) e.textContent = txt; 
-}
+function setText(id, t) { const el = document.getElementById(id); if(el) el.textContent = t; }
 
 function updateStatus(live) {
-    var s = document.getElementById('syncStatus');
-    if(s) {
-        s.innerHTML = live ? '● LIVE' : '● LOCAL';
-        s.style.color = live ? 'var(--cyan)' : 'var(--red)';
+    const st = document.getElementById('syncStatus');
+    if(st) {
+        st.innerHTML = live ? '● CLOUD LIVE' : '● LOCAL MODE';
+        st.style.color = live ? 'var(--cyan)' : 'var(--red)';
     }
 }
+
+function initMatrixEffect() {
+    const canvas = document.getElementById('matrix-canvas');
+    if(!canvas) return;
+    const ctx = canvas.getContext('2d');
+    let w = canvas.width = window.innerWidth, h = canvas.height = window.innerHeight;
+    const chars = "01SEC-CYBER-FN-01";
+    const drops = Array(Math.floor(w/20)).fill(1);
+    function draw() {
+        ctx.fillStyle = "rgba(5, 9, 8, 0.05)";
+        ctx.fillRect(0,0,w,h);
+        ctx.fillStyle = "#00ff41";
+        ctx.font = "15px monospace";
+        drops.forEach((y, i) => {
+            const text = chars[Math.floor(Math.random()*chars.length)];
+            ctx.fillText(text, i*20, y*20);
+            if(y*20 > h && Math.random() > 0.975) drops[i] = 0;
+            drops[i]++;
+        });
+    }
+    setInterval(draw, 33);
+}
+
+// Global listeners
+document.getElementById('projModalClose').onclick = closeProjectModal;
+document.getElementById('projModalOverlay').onclick = closeProjectModal;
