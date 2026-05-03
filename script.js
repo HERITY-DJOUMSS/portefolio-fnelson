@@ -1,6 +1,6 @@
 /* FN_SEC Portfolio — script.js v7.0 — FULL ROBUST & SECURE */
 
-var BIN_ID = "TON_BIN_ID_ICI"; // TON BIN ID ICI (Public)
+var BIN_ID = "69f7b799aaba882197692858"; // TON BIN ID ICI (Public)
 var JSONBIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID + '/latest';
 var LS_KEY = 'fn_portfolio_data';
 
