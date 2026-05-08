@@ -9,11 +9,7 @@ var DEF = {
   password: "Admin@2025", n8n_webhook: "",
   profile: { photo: null, name: "DJOUMESSI TATSIFANG", firstname: "Fredy Nelson",
     title: "FUTUR Ingénieur Cybersécurité", location: "France",
-    accroche: "Étudiant en Ingénierie Cybersécurité @ ESAIP
-Actuellement en formation d'ingénieur, je combine des bases solides en Réseaux & Télécoms avec une expertise en sécurité Cloud et automatisation.
-🛑 OBJECTIF :
-Je recherche une alternance de 36 mois pour mon cycle ingénieur complet, à débuter en septembre 2026. Prêt à mettre ma technique et ma rigueur au service de la résilience de vos systèmes.
-#Cybersécurité #CloudSecurity #Alternance2026#informatique&reseaux" },
+    accroche: "Passionné par la cybersécurité et la protection des systèmes d'information. Orienté Cloud & No-Code." },
   apropos: { paragraphes: [
     "Bonjour, je suis <strong>Fredy Nelson DJOUMESSI TATSIFANG</strong>, étudiant en ingénierie à l'ESAIP, spécialisé en cybersécurité.",
     "Mon objectif est de contribuer à la sécurisation des infrastructures numériques.",
